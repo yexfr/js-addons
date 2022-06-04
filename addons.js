@@ -25,7 +25,7 @@ Array.prototype.removeIndex = function(index) {
 };
 
 Array.prototype.clear = function() {
-  for(const i of this) { this.deleteItem(i); }
+  while(this[0]) this.deleteIndex(0);
 };
 
 Array.prototype.push = function(...items) {
