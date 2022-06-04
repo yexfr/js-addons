@@ -59,9 +59,9 @@ Array.prototype.reorder = function() {
   } else if(letters > nums && nums != 0) {
     const numArray = [], letArray = [];
     this.forEach(value => {
-      if(/^[0-9]+$/g.test(value)) {
+      if(!isNaN(value)) {
         numArray.push(value);
-      } else if(/^[-!$@%^&*()_+|~=`{}\[\]:";'<>?,.\/\\a-zA-Z ]+$/gi.test(value)) {
+      } else {
         letArray.push(value);
       }
     });
@@ -73,9 +73,9 @@ Array.prototype.reorder = function() {
   } else if(nums > letters && letters != 0) {
     const numArray = [], letArray = [];
     this.forEach(value => {
-      if(/^[0-9]+$/g.test(value)) {
+      if(!isNaN(value)) {
         numArray.push(value);
-      } else if(/^[-!$@%^&*()_+|~=`{}\[\]:";'<>?,.\/\\a-zA-Z ]+$/gi.test(value)) {
+      } else {
         letArray.push(value);
       }
     });
