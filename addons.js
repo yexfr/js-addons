@@ -36,6 +36,10 @@ Array.prototype.unshift = function(...items) {
   this.splice(0, 0, ...items);
 };
 
+Array.prototype.prepend = function(...items) {
+  this.unshift(...items);
+}
+
 Array.prototype.append = function(item) {
   this.push(item);
 };
@@ -45,9 +49,9 @@ Array.prototype.reorder = function() {
   let letters = 0;
   this.forEach(value => {
     if(!isNaN(value)) {
-       nums++;
+        nums++;
     } else {
-       letters++;
+        letters++;
     }
   });
   if(nums > letters && letters == 0) {
