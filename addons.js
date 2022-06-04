@@ -44,10 +44,10 @@ Array.prototype.reorder = function() {
   let nums = 0;
   let letters = 0;
   this.forEach(value => {
-    if(/^[0-9]+$/g.test(value)) {
-      nums++;
-    } else if(/^[-!$@%^&*()_+|~=`{}\[\]:";'<>?,.\/\\a-zA-Z ]+$/gi.test(value)) {
-      letters++;
+    if(!isNaN(value)) {
+       nums++;
+    } else {
+       letters++;
     }
   });
   if(nums > letters && letters == 0) {
