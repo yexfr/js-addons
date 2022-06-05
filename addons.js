@@ -5,7 +5,7 @@ String.prototype.toNumber = function() {
 };
 
 Number.prototype.isInteger = function() {
-  return Number.isInteger(this);
+  return (parseFloat(this) | 0) === parseFloat(this);
 };
 
 Array.prototype.deleteItem = function(item) {
