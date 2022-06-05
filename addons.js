@@ -149,7 +149,7 @@ Element.prototype.getHtml = function() {
   return this.innerHTML;
 };
 
-Element.prototype.click = function(callback) {
+HTMLElement.prototype.click = function(callback) {
   this.onclick = function(e) { callback(e); };
 };
 
@@ -170,7 +170,7 @@ Element.prototype.keyup = function(key, callback) {
   this.onkeyup = function(e) { if(e.key == key) callback(e); };
 };
 
-Element.prototype.focus = function(callback) {
+HTMLElement.prototype.focus = function(callback) {
   this.onfocus = function(e) { callback(e); };
 };
 
