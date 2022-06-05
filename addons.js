@@ -159,15 +159,15 @@ Element.prototype.hover = function(onin, onout) {
 };
 
 Element.prototype.keydown = function(key, callback) {
-  this.onkeydown = function(e) { if(e.key == key) callback(); };
+  this.onkeydown = function(e) { if(e.key == key) callback(e); };
 };
 
 Element.prototype.keypress = function(key, callback) {
-  this.onkeypress = function(e) { if(e.key == key) callback(); };
+  this.onkeypress = function(e) { if(e.key == key) callback(e); };
 };
 
 Element.prototype.keyup = function(key, callback) {
-  this.onkeyup = function(e) { if(e.key == key) callback(); };
+  this.onkeyup = function(e) { if(e.key == key) callback(e); };
 };
 
 Element.prototype.focus = function(callback) {
