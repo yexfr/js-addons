@@ -198,12 +198,13 @@ HTMLFormElement.prototype.submit = function(callback) {
   this.onsubmit = function(e) { callback(e); };
 };
 
+NodeList.prototype.toArray = function() {
+  return [...this];
+};
+
 function elem(...query) {
-  const elarr = [];
-  for (const el of document.querySelectorAll([...query].reduce((a, b) => a + ", "  + b))) {
-    elarr.push(el);
-  }
-  return elarr.length != 1 ? elarr : document.querySelector(query);
+  const elemArray = document.querySelectorAll([...query].join(", ")).toArray();
+  return elemArray.length != 1 ? elemArray : document.querySelector(query);
 }
 
 Object.prototype.includes = function(query) {
