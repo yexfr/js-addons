@@ -40,8 +40,8 @@ Array.prototype.prepend = function(...items) {
   this.unshift(...items);
 }
 
-Array.prototype.append = function(item) {
-  this.push(item);
+Array.prototype.append = function(...items) {
+  this.push(...item);
 };
 
 Array.prototype.reorder = function() {
@@ -60,21 +60,7 @@ Array.prototype.reorder = function() {
   } else if(letters > nums && nums == 0) {
     this.sort();
     return this;
-  } else if(letters > nums && nums != 0) {
-    const numArray = [], letArray = [];
-    this.forEach(value => {
-      if(!isNaN(value)) {
-        numArray.push(value);
-      } else {
-        letArray.push(value);
-      }
-    });
-    numArray.sort(function(a, b) { return a - b; });
-    letArray.sort();
-    this.clear();
-    this.push(...numArray, ...letArray);
-    return this;
-  } else if(nums > letters && letters != 0) {
+  } else if(letters != 0 && nums != 0) {
     const numArray = [], letArray = [];
     this.forEach(value => {
       if(!isNaN(value)) {
@@ -118,19 +104,19 @@ Array.prototype.subarr = function(start, length) {
 };
 
 Array.prototype.replace = function(rval, rwith) {
-  let replaceItems = [];
-  if(rval instanceof RegExp) {
-    this.forEach(value => {
-      const matches = value.match(rval) ? value.match(rval) : null;
-      replaceItems.push(matches != null ? value.replace(...matches, rwith) : value);
-    });
-  } else {
-    this.forEach(value => {
-      const matches = value.match(new RegExp(rval, "gi")) ? value.match(new RegExp(rval, "gi")) : null;
-      replaceItems.push(matches != null ? value.replace(...matches, rwith) : value);
-    });
-  }
-  return replaceItems;
+  return this.map(function(v) {
+    if(JSON.stringify(v) == JSON.stringify(rval)) {
+      return rwith;
+    } else if(typeof v == "string" && v.includes(rval)) {
+      return v.replace(...v.match(rval), rwith);
+    } else {
+      return v;
+    }
+  });
+};
+
+JSON.get = function(url, callback) {
+  fetch(new Request(url)).then(j => j.json()).then(s => callback(s));
 };
 
 Element.prototype.setCss = function(name, value) {
@@ -172,6 +158,10 @@ Element.prototype.keyup = function(key, callback) {
 
 HTMLElement.prototype.focus = function(callback) {
   this.onfocus = function(e) { callback(e); };
+};
+
+HTMLInputElement.prototype.val = function() {
+  return this.value;
 };
 
 Element.prototype.unfocus = function(callback) {
