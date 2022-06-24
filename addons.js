@@ -144,8 +144,13 @@ HTMLElement.prototype.click = function(callback) {
 };
 
 Element.prototype.hover = function(onin, onout) {
-  if(onin) this.onmouseenter = function(e) { onin(e); };
-  if(onout) this.onmouseleave = function(e) { onout(e); };
+  if(onin && onout) {
+    this.onmouseenter = function(e) { onin(e); };
+    this.onmouseleave = function(e) { onout(e); };
+  } else if(onin && !onout) {
+    this.onmouseenter = function(e) { onin(e); };
+    this.onmouseleave = function(e) { onin(e); };
+  }
 };
 
 Element.prototype.keydown = function(key, callback) {
