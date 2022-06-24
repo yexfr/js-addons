@@ -116,9 +116,7 @@ Array.prototype.replace = function(rval, rwith) {
 };
 
 function randomNumber(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min; 
+  return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min); 
 }
 
 JSON.get = function(url, callback) {
@@ -192,6 +190,10 @@ Element.prototype.scroll = function(callback) {
 
 HTMLFormElement.prototype.submit = function(callback) {
   this.onsubmit = function(e) { callback(e); };
+};
+
+Element.prototype.on = function(event, callback) {
+  this.addEventListener(event, callback);
 };
 
 NodeList.prototype.toArray = function() {
