@@ -193,7 +193,7 @@ HTMLFormElement.prototype.submit = function(callback) {
 };
 
 Element.prototype.on = function(event, callback) {
-  this.addEventListener(event, callback);
+  this['on' + event] = callback;
 };
 
 NodeList.prototype.toArray = function() {
