@@ -235,9 +235,7 @@ Object.prototype.forEach = function(callback) {
 Object.prototype.toArray = function() {
   let objArray = [];
   this.forEach((k, v) => {
-    const kvObj = {};
-    kvObj.setKey(k, v);
-    objArray.push(kvObj);
+    objArray.push({}.setKey(k, v));
   });
   return objArray;
 };
