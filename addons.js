@@ -105,13 +105,11 @@ Array.prototype.subarr = function(start, length) {
 
 Array.prototype.replace = function(rval, rwith) {
   return this.map(function(v) {
-    if(JSON.stringify(v) == JSON.stringify(rval)) {
+    if(JSON.stringify(v) == JSON.stringify(rval))
       return rwith;
-    } else if(typeof v == "string" && v.includes(rval)) {
+    else if(typeof v == "string" && v.includes(rval))
       return v.replace(...v.match(rval), rwith);
-    } else {
-      return v;
-    }
+    else return v;
   });
 };
 
