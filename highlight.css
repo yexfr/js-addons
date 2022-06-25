@@ -4,11 +4,11 @@ body {
 
 pre { 
     margin: 0; 
+    background: #282c34;
 } 
 
 .hljs {
     color: #abb2bf;
-    background: #282c34;
   }
   
   .hljs-comment,
