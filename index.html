@@ -7,15 +7,24 @@
     <script src="./highlight.js"></script>
   </head>
   <body>
-    <pre><code class="language-javascript" id="code"></code></pre>
+    <pre><code class="language-javascript" data-src="./addons.js"></code></pre>
     <script src="./addons.js"></script>
     <script>
+      if(elem("code[data-src]")) {
         (async () => {
-          const jsFetch = await fetch("./addons.js");
-          const jsContent = await jsFetch.text();
-          elem("#code").setHtml(jsContent);
-          hljs.highlightElement(elem("#code"));
+          if(Array.isArray(elem("code[data-src]"))) {
+            elem("code[data-src]").forEach(el => { 
+              const jsFetch = await fetch(el.getAttribute("data-src")); 
+              el.setHtml(await jsFetch.text());
+              hljs.highlightElement(el);
+            }); 
+          } else {
+            const jsFetch = await fetch(elem("code[data-src]").getAttribute("data-src")); 
+            elem("code[data-src]").setHtml(await jsFetch.text());
+            hljs.highlightElement(elem("code[data-src]"));
+          }
         })();
-    </script>
-  </body>
+    }
+   </script>
+</body>
 </html>
