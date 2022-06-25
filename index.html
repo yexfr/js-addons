@@ -12,7 +12,7 @@
     <script>
     if(elem("code[data-src]")) {
       if(Array.isArray(elem("code[data-src]"))) {
-        elem("code[data-src]").forEach((el) => { 
+        elem("code[data-src]").forEach(el => { 
           (async () => {
             const jsFetch = await fetch(el.getAttribute("data-src")); 
             el.setHtml(await jsFetch.text());
