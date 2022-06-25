@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> JS Addons </title>
+    <link href="./highlight.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="./favicon.ico">
+    <script src="./highlight.js"></script>
+  </head>
+  <body>
+    <pre><code class="language-javascript" id="code"></code></pre>
+    <script src="./addons.js"></script>
+    <script>
+        (async () => {
+          const jsFetch = await fetch("./addons.js");
+          const jsContent = await jsFetch.text();
+          elem("#code").setHtml(jsContent);
+          hljs.highlightElement(elem("#code"));
+        })();
+    </script>
+  </body>
+</html>

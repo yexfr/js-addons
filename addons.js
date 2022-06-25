@@ -41,7 +41,7 @@ Array.prototype.prepend = function(...items) {
 }
 
 Array.prototype.append = function(...items) {
-  this.push(...item);
+  this.push(...items);
 };
 
 Array.prototype.reorder = function() {
