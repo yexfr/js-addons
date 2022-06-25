@@ -10,20 +10,22 @@
     <pre><code class="language-javascript" data-src="./addons.js"></code></pre>
     <script src="./addons.js"></script>
     <script>
-      if(elem("code[data-src]")) {
+    if(elem("code[data-src]")) {
+      if(Array.isArray(elem("code[data-src]"))) {
+        elem("code[data-src]").forEach((el) => { 
+          (async () => {
+            const jsFetch = await fetch(el.getAttribute("data-src")); 
+            el.setHtml(await jsFetch.text());
+            hljs.highlightElement(el);
+          })();
+        }); 
+      } else {
         (async () => {
-          if(Array.isArray(elem("code[data-src]"))) {
-            elem("code[data-src]").forEach(el => { 
-              const jsFetch = await fetch(el.getAttribute("data-src")); 
-              el.setHtml(await jsFetch.text());
-              hljs.highlightElement(el);
-            }); 
-          } else {
-            const jsFetch = await fetch(elem("code[data-src]").getAttribute("data-src")); 
-            elem("code[data-src]").setHtml(await jsFetch.text());
-            hljs.highlightElement(elem("code[data-src]"));
-          }
+          const jsFetch = await fetch(elem("code[data-src]").getAttribute("data-src")); 
+          elem("code[data-src]").setHtml(await jsFetch.text());
+          hljs.highlightElement(elem("code[data-src]"));         
         })();
+      }
     }
    </script>
 </body>
