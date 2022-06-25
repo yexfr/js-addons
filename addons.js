@@ -108,7 +108,7 @@ Array.prototype.replace = function(rval, rwith) {
     if(JSON.stringify(v) == JSON.stringify(rval))
       return rwith;
     else if(typeof v == "string" && v.includes(rval))
-      return v.replace(...v.match(new RegExp(rval, "g")), rwith);
+      return v.replace(new RegExp(v.match(new RegExp(rval, "g")).join("|"), "g"), rwith);
     else return v;
   });
 };
