@@ -208,12 +208,20 @@ function elem(...query) {
   return elemArray.length != 1 ? elemArray : document.querySelector(query);
 }
 
+Object.defineProperty(Object.prototype, 'length', {
+  get: function() { return Object.entries(this).length; }
+});
+
 Object.prototype.includes = function(query) {
   return this.hasOwnProperty(query);
 };
 
-Object.prototype.createInstance = function() {
+Object.prototype.template = function() {
   return Object.create(this);
+}
+
+Object.prototype.new = function() {
+  return this;
 };
 
 Object.prototype.setKey = function(key, value) {
@@ -244,6 +252,10 @@ Object.prototype.keys = function() {
 
 Object.prototype.values = function() {
   return Object.values(this);
+};
+
+Function.prototype.fire = function(times, ...args) {
+  while(times--) { this(...args); }
 };
 
 const colorModify = (c0,p,c1,l) => {
