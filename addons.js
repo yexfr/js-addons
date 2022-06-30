@@ -213,7 +213,7 @@ Element.prototype.prepend = function(val) {
   if(typeof val == "string") {
     this.insertAdjacentHTML("beforebegin", val);
   } else {
-    this.parentNode.insertBefore(val, this);
+    this.insertAdjacentElement("beforebegin", val);
   }
 };
 
@@ -221,7 +221,7 @@ Element.prototype.append = function(val) {
   if(typeof val == "string") {
     this.insertAdjacentHTML("afterend", val);
   } else {
-    this.parentNode.insertBefore(val, this.nextSibling);
+    this.insertAdjacentElement("afterend", val);
   }
 };
 
@@ -229,7 +229,7 @@ Element.prototype.before = function(val) {
   if(typeof val == "string") {
     this.insertAdjacentHTML("afterbegin", val);
   } else {
-    this.parentNode.insertBefore(val, this.nextSibling);
+    this.insertAdjacentElement("afterbegin", val);
   }
 };
 
@@ -237,7 +237,7 @@ Element.prototype.after = function(val) {
   if(typeof val == "string") {
     this.insertAdjacentHTML("beforeend", val);
   } else {
-    this.appendChild(val);
+    this.insertAdjacentElement("beforeend", val);
   }
 };
 
