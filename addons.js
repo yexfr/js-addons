@@ -216,13 +216,13 @@ Object.prototype.includes = function(query) {
   return this.hasOwnProperty(query);
 };
 
-Object.prototype.template = function() {
-  return Object.create(this);
-}
 
 Object.prototype.new = function() {
-  return this;
+  return Object.create(this);
 };
+
+Object.prototype.template = Object.prototype.new;
+Object.prototype.instance = Object.prototype.new; 
 
 Object.prototype.setKey = function(key, value) {
   this[key] = value;
@@ -257,6 +257,14 @@ Object.prototype.values = function() {
 Function.prototype.fire = function(times, ...args) {
   while(times--) { this(...args); }
 };
+
+function print(...messages) {
+  console.log(...messages);
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text);
+}
 
 const colorModify = (c0,p,c1,l) => {
   let r,g,b,P,f,t,h,i=parseInt,m=Math.round,a=typeof(c1)=="string";
