@@ -134,11 +134,14 @@ Element.prototype.setHtml = function(value) {
 };
 
 Element.prototype.getHtml = function() {
-  return this.innerHTML;
+  return this.innerHTML.trim();
 };
 
 HTMLElement.prototype.click = function(callback) {
-  this.onclick = function(e) { callback(e); };
+  if(callback)
+    this.onclick = function(e) { callback(e); };
+  else 
+    this.dispatchEvent(new Event("click"))
 };
 
 Element.prototype.hover = function(onin, onout) {
@@ -152,22 +155,26 @@ Element.prototype.hover = function(onin, onout) {
 };
 
 Element.prototype.keydown = function(key, callback) {
-  this.onkeydown = function(e) { if(e.key == key) callback(e); };
+  this.onkeydown = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback(e); if(!callback) key(e); };
 };
 
 Element.prototype.keypress = function(key, callback) {
-  this.onkeypress = function(e) { if(e.key == key) callback(e); };
+  this.onkeypress = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback(e); if(!callback) key(e); };
 };
 
 Element.prototype.keyup = function(key, callback) {
-  this.onkeyup = function(e) { if(e.key == key) callback(e); };
+  this.onkeyup = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback(e); if(!callback) key(e); };
 };
 
 HTMLElement.prototype.focus = function(callback) {
-  this.onfocus = function(e) { callback(e); };
+  if(callback) 
+    this.onfocus = function(e) { callback(e); };
+  else 
+    this.dispatchEvent(new Event("focus"));
 };
 
-HTMLInputElement.prototype.val = function() {
+HTMLInputElement.prototype.val = function(newVal) {
+  if(newVal) this.value = newVal;
   return this.value;
 };
 
@@ -183,6 +190,10 @@ Element.prototype.unload = function(callback) {
   this.onunload = function(e) { callback(e); };
 };
 
+Element.prototype.select = function(callback) {
+  this.onselect = function(e) { callback(e); };
+};
+
 Element.prototype.input = function(callback) {
   this.oninput = function(e) { callback(e); };
 };
@@ -195,8 +206,60 @@ HTMLFormElement.prototype.submit = function(callback) {
   this.onsubmit = function(e) { callback(e); };
 };
 
-Element.prototype.on = function(event, callback) {
-  this['on' + event] = callback;
+Element.prototype.on = Element.prototype.addEventListener;
+Element.prototype.off = Element.prototype.removeEventListener;
+
+Element.prototype.prepend = function(val) {
+  if(typeof val == "string") {
+    this.insertAdjacentHTML("beforebegin", val);
+  } else {
+    this.parentNode.insertBefore(val, this);
+  }
+};
+
+Element.prototype.append = function(val) {
+  if(typeof val == "string") {
+    this.insertAdjacentHTML("afterend", val);
+  } else {
+    this.parentNode.insertBefore(val, this.nextSibling);
+  }
+};
+
+Element.prototype.before = function(val) {
+  if(typeof val == "string") {
+    this.insertAdjacentHTML("afterbegin", val);
+  } else {
+    this.parentNode.insertBefore(val, this.nextSibling);
+  }
+};
+
+Element.prototype.after = function(val) {
+  if(typeof val == "string") {
+    this.insertAdjacentHTML("beforeend", val);
+  } else {
+    this.appendChild(val);
+  }
+};
+
+Element.prototype.trigger = function(event) {
+  this.dispatchEvent(new Event(event));
+};
+
+Element.prototype.addClass = function(...classNames) {
+  this.classList.add(...classNames);
+};
+
+Element.prototype.removeClass = function(...classNames) {
+  this.classList.remove(...classNames);
+};
+
+Element.prototype.toggleClass = function(...classNames) {
+  [...classNames].forEach(v => {
+    if(this.classList.contains(v)) 
+      this.classList.remove(v);
+    else 
+      this.classList.add(v);
+  });
 };
 
 NodeList.prototype.toArray = function() {
@@ -263,6 +326,7 @@ function print(...messages) {
 }
 
 function copyToClipboard(text) {
+  if(!document.hasFocus()) window.focus();
   navigator.clipboard.writeText(text);
 }
 
