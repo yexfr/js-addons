@@ -206,8 +206,13 @@ HTMLFormElement.prototype.submit = function(callback) {
   this.onsubmit = function(e) { callback(e); };
 };
 
-Element.prototype.on = Element.prototype.addEventListener;
-Element.prototype.off = Element.prototype.removeEventListener;
+Element.prototype.on = function(ev, callback) {
+  this['on' + ev] = callback;
+};
+
+Element.prototype.off = function(ev) {
+  this['on' + ev] = undefined;
+};
 
 Element.prototype.prepend = function(val) {
   if(typeof val == "string") {
@@ -262,6 +267,11 @@ Element.prototype.toggleClass = function(...classNames) {
   });
 };
 
+Element.prototype.attr = function(name, value) {
+  if(value) this.setAttribute(name, value);
+  return this.getAttribute(name);
+};
+
 NodeList.prototype.toArray = function() {
   return [...this];
 };
@@ -278,7 +288,6 @@ Object.defineProperty(Object.prototype, 'length', {
 Object.prototype.includes = function(query) {
   return this.hasOwnProperty(query);
 };
-
 
 Object.prototype.new = function() {
   return Object.create(this);
