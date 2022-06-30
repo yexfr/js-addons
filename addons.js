@@ -335,7 +335,7 @@ function print(...messages) {
 }
 
 function copyToClipboard(text) {
-  if(!document.hasFocus()) window.focus();
+  if(!document.hasFocus()) document.body.focus();
   navigator.clipboard.writeText(text);
 }
 
