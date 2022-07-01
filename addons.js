@@ -183,7 +183,7 @@ Element.prototype.css = function(name, val) {
   }
   if(typeof name !== "string" && typeof name === "object" && typeof val === "undefined") 
     this.setCss(name);
-  if(name && typeof name === "string" && typeof val === "undefined")
+  if(name && typeof name === "string" && typeof name !== "object" && typeof val === "undefined")
     return this.getCss(name);
 };
 
