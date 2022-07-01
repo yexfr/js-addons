@@ -113,6 +113,51 @@ Array.prototype.replace = function(rval, rwith) {
   });
 };
 
+Object.defineProperty(Object.prototype, 'length', {
+  get: function() { return Object.entries(this).length; }
+});
+
+Object.prototype.includes = function(query) {
+  return this.hasOwnProperty(query);
+};
+
+Object.prototype.new = function() {
+  return Object.create(this);
+};
+
+Object.prototype.template = Object.prototype.new;
+Object.prototype.instance = Object.prototype.new; 
+
+Object.prototype.setKey = function(key, value) {
+  this[key] = value;
+};
+
+Object.prototype.deleteKey = function(key) {
+  delete this[key];
+};
+
+Object.prototype.forEach = function(callback) {
+  for (const [key, value] of Object.entries(this)) {
+    callback(key, value);
+  }
+};
+
+Object.prototype.toArray = function() {
+  let objArray = [];
+  this.forEach((k, v) => {
+    objArray.push({}.setKey(k, v));
+  });
+  return objArray;
+};
+
+Object.prototype.keys = function() {
+  return Object.keys(this);
+};
+
+Object.prototype.values = function() {
+  return Object.values(this);
+};
+
 function randomNumber(min, max) {
   return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min); 
 }
@@ -122,11 +167,24 @@ JSON.get = function(url, callback) {
 };
 
 Element.prototype.setCss = function(name, value) {
-  this.style[name] = value;
+  if(value) 
+    this.style[name] = value;
+  else name.forEach((k, v) =>  { this.style[k] = v; });
 };
 
 Element.prototype.getCss = function(name) {
   return this.style[name];
+};
+
+Element.prototype.css = function(name, val) {
+  if(val && typeof name === "string") {
+    this.setCss(name, val);
+    return val;
+  }
+  if(typeof name !== "string" && typeof name === "object" && typeof val === "undefined") 
+    this.setCss(name);
+  if(name && typeof name === "string" && typeof val === "undefined")
+    return this.getCss(name);
 };
 
 Element.prototype.setHtml = function(value) {
@@ -134,6 +192,11 @@ Element.prototype.setHtml = function(value) {
 };
 
 Element.prototype.getHtml = function() {
+  return this.innerHTML.trim();
+};
+
+Element.prototype.html = function(value) {
+  if(value) this.innerHTML = value;
   return this.innerHTML.trim();
 };
 
@@ -280,51 +343,6 @@ function elem(...query) {
   const elemArray = document.querySelectorAll([...query].join(", ")).toArray();
   return elemArray.length != 1 ? elemArray : document.querySelector(query);
 }
-
-Object.defineProperty(Object.prototype, 'length', {
-  get: function() { return Object.entries(this).length; }
-});
-
-Object.prototype.includes = function(query) {
-  return this.hasOwnProperty(query);
-};
-
-Object.prototype.new = function() {
-  return Object.create(this);
-};
-
-Object.prototype.template = Object.prototype.new;
-Object.prototype.instance = Object.prototype.new; 
-
-Object.prototype.setKey = function(key, value) {
-  this[key] = value;
-};
-
-Object.prototype.deleteKey = function(key) {
-  delete this[key];
-};
-
-Object.prototype.forEach = function(callback) {
-  for (const [key, value] of Object.entries(this)) {
-    callback(key, value);
-  }
-};
-
-Object.prototype.toArray = function() {
-  let objArray = [];
-  this.forEach((k, v) => {
-    objArray.push({}.setKey(k, v));
-  });
-  return objArray;
-};
-
-Object.prototype.keys = function() {
-  return Object.keys(this);
-};
-
-Object.prototype.values = function() {
-  return Object.values(this);
-};
 
 Function.prototype.fire = function(times, ...args) {
   while(times--) { this(...args); }
