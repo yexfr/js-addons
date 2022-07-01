@@ -113,6 +113,36 @@ Array.prototype.replace = function(rval, rwith) {
   });
 };
 
+function randomNumber(min, max) {
+  return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min); 
+}
+
+Array.prototype.randomItem = function() {
+  if(this.length > 0) 
+    return this[randomNumber(0, this.length - 1)];
+};
+
+Array.prototype.randomIndex = function() {
+  if(this.length > 0) 
+    return randomNumber(0, this.length - 1);
+};
+
+Array.prototype.min = function() {
+  if(this.length > 0 && this.every(v => !isNaN(v))) 
+    return Math.min(...this);
+};
+
+Array.prototype.max = function() {
+  if(this.length > 0 && this.every(v => !isNaN(v))) 
+    return Math.max(...this);
+};
+
+Array.prototype.size = Array.prototype.length;
+
+Array.prototype.compact = function() {
+  return this.filter(v => !!v || v === 0);
+};
+
 Object.defineProperty(Object.prototype, 'length', {
   get: function() { return Object.entries(this).length; }
 });
@@ -128,12 +158,18 @@ Object.prototype.new = function() {
 Object.prototype.template = Object.prototype.new;
 Object.prototype.instance = Object.prototype.new; 
 
+Object.prototype.getKey = function(key) {
+  return this[key];
+};
+
 Object.prototype.setKey = function(key, value) {
   this[key] = value;
+  return value;
 };
 
 Object.prototype.deleteKey = function(key) {
   delete this[key];
+  return this;
 };
 
 Object.prototype.forEach = function(callback) {
@@ -157,10 +193,6 @@ Object.prototype.keys = function() {
 Object.prototype.values = function() {
   return Object.values(this);
 };
-
-function randomNumber(min, max) {
-  return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min); 
-}
 
 JSON.get = function(url, callback) {
   fetch(new Request(url)).then(j => j.json()).then(s => callback(s));
