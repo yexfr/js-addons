@@ -207,26 +207,31 @@ Object.defineProperty(Element.prototype, 'selector', {
   get: function() { return this.tagName.toLowerCase() + (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length > 0 ? (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length !== 1 ? this.getAttributeNames().filter(v => v !== "class" && v !== "id").reduce((p, v) => `[${p}='${this.attr(p)}']` + `[${v}='${this.attr(v)}']`) : `[${this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0]}='${this.attr(this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0])}']`) : '') + (this.id ? "#" + this.id : '') + (this.className ? "." + this.className : ''); }
 });
 
-Element.prototype.setCss = function(name, value) {
-  if(value) 
-    setRule(this.selector, `${name}:${value}`);
-  else 
-    setRule(this.selector, name);
+Element.prototype.setRule = function(val) {
+  setRule(this.selector, val);
 };
 
-Element.prototype.getCss = function(name) {
-  return this.style[name];
+Element.prototype.getRule = function(val) {
+  return this.style[val];
 };
 
-Element.prototype.css = function(name, val) {
-  if(val && typeof name === "string") {
-    this.setCss(name, val);
-    return val;
-  }
-  if(typeof name !== "string" && typeof name === "object" && typeof val === "undefined") 
-    this.setCss(name);
-  if(name && typeof name === "string" && typeof name !== "object" && typeof val === "undefined")
-    return this.getCss(name);
+Element.prototype.setCss = Element.prototype.setRule;
+
+Element.prototype.getCss = Element.prototype.getRule;
+
+function cssToObj(cssText) { 
+  var regex = /([\w-]*)\s*:\s*([^;]*)/g;
+  var match, properties={};
+  while(match=regex.exec(cssText)) 
+    properties[match[1]] = match[2].trim(); 
+  return properties; 
+}
+
+Element.prototype.css = function(val) {
+  if(typeof val !== "string" || cssToObj(val) !== {}) 
+    this.setRule(val);
+  else
+    return this.getRule(val);
 };
 
 Element.prototype.setHtml = function(value) {
@@ -420,13 +425,6 @@ const colorModify = (c0,p,c1,l) => {
 };
 
 function setRule(selector, rules) {
-  function cssToObj(cssText) { 
-    var regex = /([\w-]*)\s*:\s*([^;]*)/g;
-    var match, properties={};
-    while(match=regex.exec(cssText)) 
-      properties[match[1]] = match[2].trim(); 
-    return properties; 
-  }
   if(document.styleSheets.length > 0) {
     for(const ss of document.styleSheets) {
       const r = ss.cssRules ? [...ss.cssRules] : [...ss.rules];
