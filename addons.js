@@ -198,10 +198,20 @@ JSON.get = function(url, callback) {
   fetch(new Request(url)).then(j => j.json()).then(s => callback(s));
 };
 
+Element.prototype.attr = function(name, value) {
+  if(value) this.setAttribute(name, value);
+  return this.getAttribute(name);
+};
+
+Object.defineProperty(Element.prototype, 'selector', {
+  get: function() { return this.tagName.toLowerCase() + (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length > 0 ? (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length !== 1 ? this.getAttributeNames().filter(v => v !== "class" && v !== "id").reduce((p, v) => `[${p}='${this.attr(p)}']` + `[${v}='${this.attr(v)}']`) : `[${this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0]}='${this.attr(this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0])}']`) : '') + (this.id ? "#" + this.id : '') + (this.className ? "." + this.className : ''); }
+});
+
 Element.prototype.setCss = function(name, value) {
   if(value) 
-    this.style[name] = value;
-  else name.forEach((k, v) =>  { this.style[k] = v; });
+    setRule(this.selector, `${name}:${value}`);
+  else 
+    setRule(this.selector, name);
 };
 
 Element.prototype.getCss = function(name) {
@@ -362,11 +372,6 @@ Element.prototype.toggleClass = function(...classNames) {
   });
 };
 
-Element.prototype.attr = function(name, value) {
-  if(value) this.setAttribute(name, value);
-  return this.getAttribute(name);
-};
-
 NodeList.prototype.toArray = function() {
   return [...this];
 };
@@ -413,3 +418,39 @@ const colorModify = (c0,p,c1,l) => {
   if(h)return"rgb"+(f?"a(":"(")+r+","+g+","+b+(f?","+m(a*1000)/1000:"")+")";
   else return"#"+(4294967296+r*16777216+g*65536+b*256+(f?m(a*255):0)).toString(16).slice(1,f?undefined:-2)
 };
+
+function setRule(selector, rules) {
+  function cssToObj(cssText) { 
+    var regex = /([\w-]*)\s*:\s*([^;]*)/g;
+    var match, properties={};
+    while(match=regex.exec(cssText)) 
+      properties[match[1]] = match[2].trim(); 
+    return properties; 
+  }
+  if(document.styleSheets.length > 0) {
+    for(const ss of document.styleSheets) {
+      const r = ss.cssRules ? [...ss.cssRules] : [...ss.rules];
+      if(r.some(v => v.selectorText === selector)) {
+        for(const rule of r) {
+          if(rule.selectorText === selector) {
+            if(typeof rules !== "string") 
+              rules.forEach((k, v) => { rule.style[k] = v; });
+            else 
+              cssToObj(rules).forEach((k, v) => { rule.style[k] = v; });
+          }
+        }
+      } else if(ss === document.styleSheets[document.styleSheets.length - 1]) {
+        const propText = typeof rules === "string" ? rules : Object.keys(rules).map(function (p) {
+          return p + ":" + (p === "content" ? "'" + rules[p] + "'" : rules[p]);
+        }).join(";");
+        ss.insertRule(`${selector} { ${propText} }`, r.length);
+      }
+    }
+  } else {
+    const style = document.head.appendChild(document.createElement("style")).sheet;
+    const propText = typeof rules === "string" ? rules : Object.keys(rules).map(function (p) {
+      return p + ":" + (p === "content" ? "'" + rules[p] + "'" : rules[p]);
+    }).join(";");
+    style.insertRule(`${selector} { ${propText} }`);
+  }
+}
