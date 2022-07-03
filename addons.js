@@ -251,43 +251,46 @@ Element.prototype.getHtml = function() {
   return this.innerHTML.trim();
 };
 
+Element.prototype.setHTML = Element.prototype.setHtml;
+Element.prototype.getHTML = Element.prototype.getHtml;
+
 Element.prototype.html = function(value) {
-  if(value) this.innerHTML = value;
-  return this.innerHTML.trim();
+  if(value) this.setHtml(value);
+  return this.getHtml();
 };
 
 HTMLElement.prototype.click = function(callback) {
   if(callback)
-    this.onclick = function(e) { callback(e); };
+    this.onclick = function(e) { callback.call(this, e); };
   else 
     this.dispatchEvent(new Event("click"))
 };
 
 Element.prototype.hover = function(onin, onout) {
   if(onin && onout) {
-    this.onmouseenter = function(e) { onin(e); };
-    this.onmouseleave = function(e) { onout(e); };
+    this.onmouseenter = function(e) { onin.call(this, e); };
+    this.onmouseleave = function(e) { onout.call(this, e); };
   } else if(onin && !onout) {
-    this.onmouseenter = function(e) { onin(e); };
-    this.onmouseleave = function(e) { onin(e); };
+    this.onmouseenter = function(e) { onin.call(this, e); };
+    this.onmouseleave = function(e) { onin.call(this, e); };
   }
 };
 
 Element.prototype.keydown = function(key, callback) {
-  this.onkeydown = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback(e); if(!callback) key(e); };
+  this.onkeydown = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
 };
 
 Element.prototype.keypress = function(key, callback) {
-  this.onkeypress = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback(e); if(!callback) key(e); };
+  this.onkeypress = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
 };
 
 Element.prototype.keyup = function(key, callback) {
-  this.onkeyup = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback(e); if(!callback) key(e); };
+  this.onkeyup = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
 };
 
 HTMLElement.prototype.focus = function(callback) {
   if(callback) 
-    this.onfocus = function(e) { callback(e); };
+    this.onfocus = function(e) { callback.call(this, e); };
   else 
     this.dispatchEvent(new Event("focus"));
 };
@@ -298,31 +301,31 @@ HTMLInputElement.prototype.val = function(newVal) {
 };
 
 Element.prototype.unfocus = function(callback) {
-  this.onblur = function(e) { callback(e); };
+  this.onblur = function(e) { callback.call(this, e); };
 };
 
 Element.prototype.load = function(callback) {
-  this.onload = function(e) { callback(e); };
+  this.onload = function(e) { callback.call(this, e); };
 };
 
 Element.prototype.unload = function(callback) {
-  this.onunload = function(e) { callback(e); };
+  this.onunload = function(e) { callback.call(this, e); };
 };
 
 Element.prototype.select = function(callback) {
-  this.onselect = function(e) { callback(e); };
+  this.onselect = function(e) { callback.call(this, e); };
 };
 
 Element.prototype.input = function(callback) {
-  this.oninput = function(e) { callback(e); };
+  this.oninput = function(e) { callback.call(this, e); };
 };
 
 Element.prototype.scroll = function(callback) {
-  this.onscroll = function(e) { callback(e); };
+  this.onscroll = function(e) { callback.call(this, e); };
 };
 
 HTMLFormElement.prototype.submit = function(callback) {
-  this.onsubmit = function(e) { callback(e); };
+  this.onsubmit = function(e) { callback.call(this, e); };
 };
 
 Element.prototype.on = function(ev, callback) {
