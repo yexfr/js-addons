@@ -1,9 +1,8 @@
-body {
+body, pre {
     margin: 0;
 }
 
 pre { 
-    margin: 0; 
     background: #282c34;
 } 
 

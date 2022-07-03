@@ -143,6 +143,10 @@ Array.prototype.compact = function() {
   return this.filter(v => !!v || v === 0);
 };
 
+Array.prototype.reject = function(cn) {
+  return this.filter(v => !cn(v));
+};
+
 Object.prototype.defineGetter = function(name, value) {
   Object.defineProperty(this, name, {
     get: value
@@ -151,6 +155,10 @@ Object.prototype.defineGetter = function(name, value) {
 
 Object.prototype.freeze = function() {
   return Object.freeze(this);
+};
+
+Object.prototype.seal = function() {
+  return Object.seal(this);
 };
 
 Object.prototype.defineGetter('length', function() { return Object.entries(this).length; });
@@ -213,7 +221,7 @@ Element.prototype.attr = function(name, value) {
 };
 
 Object.defineProperty(Element.prototype, 'selector', {
-  get: function() { return this.tagName.toLowerCase() + (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length > 0 ? (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length !== 1 ? this.getAttributeNames().filter(v => v !== "class" && v !== "id").reduce((p, v) => `[${p}='${this.attr(p)}']` + `[${v}='${this.attr(v)}']`) : `[${this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0]}='${this.attr(this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0])}']`) : '') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); }
+  get: function() { return (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length > 0 ? (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length !== 1 ? this.getAttributeNames().filter(v => v !== "class" && v !== "id").reduce((p, v) => `[${p}='${this.attr(p)}']` + `[${v}='${this.attr(v)}']`) : `[${this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0]}='${this.attr(this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0])}']`) : '') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); }
 });
 
 Element.prototype.setRule = function(val) {
@@ -225,8 +233,9 @@ Element.prototype.getRule = function(val) {
 };
 
 Element.prototype.setCss = Element.prototype.setRule;
-
+Element.prototype.setCSS = Element.prototype.setRule;
 Element.prototype.getCss = Element.prototype.getRule;
+Element.prototype.getCSS = Element.prototype.getRule;
 
 function cssToObj(cssText) { 
   var regex = /([\w-]*)\s*:\s*([^;]*)/g;
@@ -255,7 +264,7 @@ Element.prototype.setHTML = Element.prototype.setHtml;
 Element.prototype.getHTML = Element.prototype.getHtml;
 
 Element.prototype.html = function(value) {
-  if(value) this.setHtml(value);
+  if(typeof value !== 'undefined') this.setHtml(value);
   return this.getHtml();
 };
 
@@ -388,6 +397,12 @@ Element.prototype.toggleClass = function(...classNames) {
       this.classList.add(v);
   });
 };
+
+Element.prototype.hasClass = function(...classNames) {
+  return [...classNames].every(v => this.classList.contains(v));
+};
+
+Element.prototype.defineGetter('hasContent', function() { return this.html() !== ''; });
 
 NodeList.prototype.toArray = function() {
   return [...this];
