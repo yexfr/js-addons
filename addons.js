@@ -1,5 +1,15 @@
 /* </> \---> 𝙔𝙚𝙭'𝙨 𝙅𝙖𝙫𝙖𝙎𝙘𝙧𝙞𝙥𝙩 𝘼𝙙𝙙𝙤𝙣𝙨 <---/ </> */
 
+String.prototype.replaceArray = function(find, replace) {
+  var replaceString = this;
+  var regex; 
+  for (var i = 0; i < find.length; i++) {
+    regex = new RegExp(find[i], "g");
+    replaceString = replaceString.replace(regex, replace[i]);
+  }
+  return replaceString;
+};
+
 String.prototype.toNumber = function() {
   return parseInt(this);
 };
