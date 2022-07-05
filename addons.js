@@ -256,7 +256,7 @@ function cssToObj(cssText) {
 }
 
 Element.prototype.css = function(val) {
-  if(typeof val !== "string" || cssToObj(val) !== {}) 
+  if(typeof val !== "string" || JSON.stringify(cssToObj(val)) !== "{}") 
     this.setRule(val);
   else
     return this.getRule(val);
