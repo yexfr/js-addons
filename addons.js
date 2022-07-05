@@ -231,7 +231,7 @@ Element.prototype.attr = function(name, value) {
 };
 
 Object.defineProperty(Element.prototype, 'selector', {
-  get: function() { return (this.parentElement.parentElement ? this.parentElement.parentElement.selector + " > " : '') +  (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length > 0 ? (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length !== 1 ? this.getAttributeNames().filter(v => v !== "class" && v !== "id").reduce((p, v) => `[${p}='${this.attr(p)}']` + `[${v}='${this.attr(v)}']`) : `[${this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0]}='${this.attr(this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0])}']`) : '') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); }
+  get: function() { return (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length > 0 ? (this.getAttributeNames().filter(v => v !== "class" && v !== "id").length !== 1 ? this.getAttributeNames().filter(v => v !== "class" && v !== "id").reduce((p, v) => `[${p}='${this.attr(p)}']` + `[${v}='${this.attr(v)}']`) : `[${this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0]}='${this.attr(this.getAttributeNames().filter(v => v !== "class" && v !== "id")[0])}']`) : '') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); }
 });
 
 Element.prototype.setRule = function(val) {
