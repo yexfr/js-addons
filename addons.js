@@ -138,12 +138,12 @@ Array.prototype.randomIndex = function() {
 };
 
 Array.prototype.min = function() {
-  if(this.length > 0 && this.every(v => !isNaN(v))) 
+  if(this.length > 0 && this.every(v => typeof v == "number")) 
     return Math.min(...this);
 };
 
 Array.prototype.max = function() {
-  if(this.length > 0 && this.every(v => !isNaN(v))) 
+  if(this.length > 0 && this.every(v => typeof v == "number")) 
     return Math.max(...this);
 };
 
@@ -157,9 +157,21 @@ Array.prototype.reject = function(cn) {
   return this.filter(v => !cn(v));
 };
 
+Object.prototype.forEach = function(callback) {
+  for (const key of Object.keys(this)) {
+    callback(key, this[key]);
+  }
+};
+
 Object.prototype.defineGetter = function(name, value) {
   Object.defineProperty(this, name, {
     get: value
+  });
+};
+
+Object.prototype.defineSetter = function(name, value) {
+  Object.defineProperty(this, name, {
+    set: value
   });
 };
 
@@ -174,16 +186,16 @@ Object.prototype.seal = function() {
 Object.prototype.defineGetter('length', function() { return Object.entries(this).length; });
 Object.prototype.size = Object.prototype.length;
 
-Object.prototype.includes = function(query) {
-  return this.hasOwnProperty(query);
+Object.prototype.includes = function(key) {
+  return key in this;
 };
 
-Object.prototype.new = function() {
-  return Object.create(this);
+Object.prototype.keyOf = function(val) {
+  for (const key of Object.keys(this)) {
+    if(this[key] === val) 
+      return key;
+  }
 };
-
-Object.prototype.template = Object.prototype.new;
-Object.prototype.instance = Object.prototype.new; 
 
 Object.prototype.getKey = function(key) {
   return this[key];
@@ -199,17 +211,27 @@ Object.prototype.deleteKey = function(key) {
   return this;
 };
 
-Object.prototype.forEach = function(callback) {
-  for (const [key, value] of Object.entries(this)) {
-    callback(key, value);
-  }
+Object.prototype.new = function() {
+  const newObj = {};
+  Object.getOwnPropertyDescriptors(this).forEach((k, v) => { 
+    if(typeof v.value !== "undefined") 
+      newObj.setKey(k, v.value);
+    if(typeof v.get !== "undefined")
+      newObj.defineGetter(k, v.get);
+    if(typeof v.set !== "undefined") 
+      newObj.defineSetter(k, v.set);
+  });
+  return newObj;
 };
 
+Object.prototype.template = Object.prototype.new;
+Object.prototype.instance = Object.prototype.new; 
+
 Object.prototype.toArray = function() {
-  let objArray = [];
-  this.forEach((k, v) => {
-    objArray.push({}.setKey(k, v));
-  });
+  const objArray = [];
+  for(const [key, value] of Object.entries(this)) {
+    objArray.push({}.setKey(key, value));
+  }
   return objArray;
 };
 
@@ -220,6 +242,22 @@ Object.prototype.keys = function() {
 Object.prototype.values = function() {
   return Object.values(this);
 };
+
+function toArray(val) {
+  if(JSON.stringify(val).search(/^\{.{0,}\}$/) !== -1) {
+    return Object.prototype.toArray.apply(val);
+  } else {
+    try {
+      return Array.from(val);
+    } catch {
+      try {
+        return [...this];
+      } catch {
+        console.log("cannot coerce value to array");
+      }
+    }
+  }
+}
 
 JSON.get = function(url, callback) {
   fetch(new Request(url)).then(j => j.json()).then(s => callback(s));
