@@ -438,13 +438,15 @@ Element.prototype.addClass = function(...classNames) {
 
 Element.prototype.removeClass = function(...classNames) {
   this.classList.remove(...classNames);
+  if(this.classList.length > 0) this.removeAttribute('class');
 };
 
 Element.prototype.toggleClass = function(...classNames) {
   [...classNames].forEach(v => {
-    if(this.classList.contains(v)) 
-      this.classList.remove(v);
-    else 
+    if(this.classList.contains(v)) {
+      this.classList.remove(v); 
+      if(this.classList.length > 0) this.removeAttribute('class');
+    } else 
       this.classList.add(v);
   });
 };
