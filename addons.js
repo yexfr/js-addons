@@ -333,11 +333,13 @@ Element.prototype.html = function(value) {
   return this.getHtml();
 };
 
+HTMLElement.prototype.triggerClick = HTMLElement.prototype.click;
+
 HTMLElement.prototype.click = function(callback) {
   if(callback)
     this.onclick = function(e) { callback.call(this, e); };
   else 
-    this.dispatchEvent(new Event("click"))
+    this.triggerClick();
 };
 
 Element.prototype.hover = function(onin, onout) {
@@ -362,11 +364,13 @@ Element.prototype.keyup = function(key, callback) {
   this.onkeyup = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
 };
 
+HTMLElement.prototype.triggerFocus = HTMLElement.prototype.focus;
+
 HTMLElement.prototype.focus = function(callback) {
   if(callback) 
     this.onfocus = function(e) { callback.call(this, e); };
   else 
-    this.dispatchEvent(new Event("focus"));
+    this.triggerFocus();
 };
 
 HTMLInputElement.prototype.val = function(newVal) {
