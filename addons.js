@@ -10,6 +10,8 @@ String.prototype.replaceArray = function(find, replace) {
   return replaceString;
 };
 
+String.prototype.contains = String.prototype.includes;
+
 String.prototype.toNumber = function() {
   return parseInt(this);
 };
@@ -79,10 +81,7 @@ Array.prototype.reorder = function() {
         letArray.push(value);
       }
     });
-    numArray.sort(function(a, b) { return a - b; });
-    letArray.sort();
-    this.clear();
-    this.push(...numArray, ...letArray);
+    Object.assign(this, [...numArray.sort(function(a, b) { return a - b; }), ...letArray.sort()]);
     return this;
   }
 };
@@ -127,6 +126,23 @@ function randomNumber(min, max) {
   return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min); 
 }
 
+Array.prototype.all = Array.prototype.every;
+Array.prototype.any = Array.prototype.some;
+Array.prototype.contains = Array.prototype.includes;
+Array.prototype.has = Array.prototype.includes;
+
+Array.prototype.first = function() {
+  return this[0];
+};
+
+Array.prototype.last = function() {
+  return this[this.length - 1];
+};
+
+Array.prototype.item = function(index) {
+  return this[index + 1];
+};
+
 Array.prototype.randomItem = function() {
   if(this.length > 0) 
     return this[randomNumber(0, this.length - 1)];
@@ -138,13 +154,18 @@ Array.prototype.randomIndex = function() {
 };
 
 Array.prototype.min = function() {
-  if(this.length > 0 && this.every(v => typeof v == "number")) 
+  if(this.every(v => typeof v == "number")) 
     return Math.min(...this);
 };
 
 Array.prototype.max = function() {
-  if(this.length > 0 && this.every(v => typeof v == "number")) 
+  if(this.every(v => typeof v == "number")) 
     return Math.max(...this);
+};
+
+Array.prototype.sum = function() {
+  if(this.every(v => typeof v == "number")) 
+    return this.reduce((acc, cur) => acc + cur, 0);
 };
 
 Array.prototype.size = Array.prototype.length;
@@ -228,19 +249,14 @@ Object.prototype.template = Object.prototype.new;
 Object.prototype.instance = Object.prototype.new; 
 
 Object.prototype.toArray = function() {
-  const objArray = [];
-  for(const [key, value] of Object.entries(this)) {
-    objArray.push({}.setKey(key, value));
-  }
-  return objArray;
+  return Object.entries(this).map(([key, value]) => JSON.parse(`{"${key}":"${value}"}`));;
 };
 
-Object.prototype.keys = function() {
-  return Object.keys(this);
-};
+Object.prototype.defineGetter('keys', function() { return Object.keys(this); });
+Object.prototype.defineGetter('values', function() { return Object.values(this); });
 
-Object.prototype.values = function() {
-  return Object.values(this);
+Object.prototype.concat = function(obj) { 
+  return {...this, ...obj}; 
 };
 
 function toArray(val) {
@@ -254,6 +270,7 @@ function toArray(val) {
         return [...this];
       } catch {
         console.log("cannot coerce value to array");
+        return false;
       }
     }
   }
@@ -353,6 +370,11 @@ HTMLElement.prototype.focus = function(callback) {
 };
 
 HTMLInputElement.prototype.val = function(newVal) {
+  if(typeof newVal !== 'undefined') this.value = newVal;
+  return this.value;
+};
+
+HTMLTextAreaElement.prototype.val = function(newVal) {
   if(typeof newVal !== 'undefined') this.value = newVal;
   return this.value;
 };
