@@ -249,7 +249,7 @@ Object.prototype.template = Object.prototype.new;
 Object.prototype.instance = Object.prototype.new; 
 
 Object.prototype.toArray = function() {
-  return Object.entries(this).map(([key, value]) => JSON.parse(`{"${key}":"${value}"}`));;
+  return Object.entries(this).map(([key, value]) => JSON.parse(`{"${key}":"${value}"}`));
 };
 
 Object.prototype.defineGetter('keys', function() { return Object.keys(this); });
