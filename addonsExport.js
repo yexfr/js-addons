@@ -552,3 +552,5 @@ function setRule(selector, rules) {
     style.insertRule(`${selector} { ${propText} }`);
   }
 }
+
+export const addons = {setRule, cssToObj, toArray, elem, colorModify, print, copyToClipboard, init };
