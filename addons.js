@@ -114,6 +114,12 @@ function init() {
       else return v;
     });
   };
+   
+  Array.prototype.allType = function(type) {
+    return this.every(v => typeof v === type.toLowerCase());
+  };
+
+  Array.prototype.everyType = Array.prototype.allType;
 
   Array.prototype.all = Array.prototype.every;
   Array.prototype.any = Array.prototype.some;
@@ -197,7 +203,7 @@ function init() {
   Object.prototype.size = Object.prototype.length;
 
   Object.prototype.includes = function(key) {
-    return key in this;
+    return key in this && this.propertyIsEnumerable(key);
   };
 
   Object.prototype.keyOf = function(val) {
@@ -254,8 +260,8 @@ function init() {
     return this.getAttribute(name);
   };
 
-  Object.defineProperty(Element.prototype, 'selector', {
-    get: function() { return (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + this.getAttributeNames().filter(v => v !== "class" && v !== "id" && v !== "style").map(v => `[${v}='${this.attr(v)}']`).join('') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); }
+  Element.prototype.defineGetter('selector', function() { 
+    return (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + this.getAttributeNames().filter(v => v !== "class" && v !== "id" && v !== "style").map(v => `[${v}='${this.attr(v)}']`).join('') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); 
   });
 
   Element.prototype.setRule = function(val) {
