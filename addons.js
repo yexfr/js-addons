@@ -114,12 +114,18 @@ function init() {
       else return v;
     });
   };
-   
+
   Array.prototype.allType = function(type) {
     return this.every(v => typeof v === type.toLowerCase());
   };
 
   Array.prototype.everyType = Array.prototype.allType;
+
+  Array.prototype.anyType = function(type) {
+    return this.some(v => typeof v === type.toLowerCase());
+  };
+
+  Array.prototype.someType = Array.prototype.anyType;
 
   Array.prototype.all = Array.prototype.every;
   Array.prototype.any = Array.prototype.some;
@@ -173,6 +179,16 @@ function init() {
     return this.filter(v => !cn(v));
   };
 
+  Array.prototype.collapse = function(sep) {
+    if(this.allType('number'))
+      return this.sum();
+    else if(this.all(v => JSON.stringify(v).search(/^\{.{0,}\}$/) !== -1) && this.allType('object')) 
+      return this.reduce((acc, cur) => { return {...acc, ...cur}; });
+    else if(this.all(v => Array.isArray(v))) 
+      return this.reduce((acc, cur) => { return acc.concat(cur); });
+    else return this.join(typeof sep !== 'undefined' ? sep : '');
+  };
+
   Object.prototype.forEach = function(callback) {
     for (const key of Object.keys(this)) {
       callback(key, this[key]);
@@ -203,7 +219,7 @@ function init() {
   Object.prototype.size = Object.prototype.length;
 
   Object.prototype.includes = function(key) {
-    return key in this && this.propertyIsEnumerable(key);
+    return key in this;
   };
 
   Object.prototype.keyOf = function(val) {
@@ -260,8 +276,8 @@ function init() {
     return this.getAttribute(name);
   };
 
-  Element.prototype.defineGetter('selector', function() { 
-    return (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + this.getAttributeNames().filter(v => v !== "class" && v !== "id" && v !== "style").map(v => `[${v}='${this.attr(v)}']`).join('') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); 
+  Object.defineProperty(Element.prototype, 'selector', {
+    get: function() { return (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + this.getAttributeNames().filter(v => v !== "class" && v !== "id" && v !== "style").map(v => `[${v}='${this.attr(v)}']`).join('') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); }
   });
 
   Element.prototype.setRule = function(val) {
