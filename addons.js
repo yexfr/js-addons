@@ -80,21 +80,15 @@ function init() {
   };
 
   Array.prototype.toObject = function() {
-    let arrayObj = {};
-    this.forEach((v, i) => arrayObj[i] = v);
-    return arrayObj;
+    return { ...this };
   };
 
   Array.prototype.toMap = function() {
-    let arrayMap = new Map();
-    this.forEach((v, i) => arrayMap.set(i, v));
-    return arrayMap;
+    return new Map(this.map((v, i) => [i, v]));
   };
 
   Array.prototype.toSet = function() {
-    let arraySet = new Set();
-    this.forEach(v => arraySet.add(v));
-    return arraySet;
+    return new Set(this);
   };
 
   Array.prototype.subarray = function(start, end) {
@@ -106,13 +100,15 @@ function init() {
   };
 
   Array.prototype.replace = function(rval, rwith) {
-    return this.map(function(v) {
+    const newArr = this.map(function(v) {
       if(JSON.stringify(v) == JSON.stringify(rval))
         return rwith;
       else if(typeof v == "string" && v.includes(rval))
         return v.replace(new RegExp(v.match(new RegExp(rval, "g")).join("|"), "g"), rwith);
       else return v;
     });
+    Object.assign(this, newArr);
+    return newArr;
   };
 
   Array.prototype.allType = function(type) {
