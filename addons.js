@@ -310,7 +310,25 @@ function init() {
   Element.prototype.html = function(value) {
     if(typeof value !== 'undefined') this.setHtml(value);
     return this.getHtml();
- };
+  };
+
+  Element.prototype.getCont = function() {
+    return this.textContent;  
+  };
+
+  Element.prototype.setCont = function(val) {
+    this.textContent = val;
+  };
+
+  Element.prototype.getContent = Element.prototype.getCont;
+  Element.prototype.setContent = Element.prototype.setCont;
+
+  Element.prototype.cont = function(val) {
+    if(typeof val !== 'undefined') this.setCont(val);
+    return this.getCont();
+  };
+
+  Element.prototype.content = Element.prototype.cont;
 
   HTMLElement.prototype.triggerClick = HTMLElement.prototype.click;
 
