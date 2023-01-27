@@ -281,7 +281,7 @@ function init() {
   };
 
   Element.prototype.getRule = function(val) {
-    return this.style[val];
+    return window.getComputedStyle(this).getPropertyValue(val);
   };
 
   Element.prototype.setCss = Element.prototype.setRule;
