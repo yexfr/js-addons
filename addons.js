@@ -11,15 +11,27 @@ function init() {
     return replaceString;
   };
 
+  String.prototype.splice = function(start, delCount, newSubStr) {
+    Object.assign(this, this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount)));
+    return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
+  };
+
+  String.prototype.insert = function(index, value) {
+    Object.assign(this, this.slice(0, index) + value + this.slice(index));
+    return this.slice(0, index) + value + this.slice(index);
+  }
+
   String.prototype.contains = String.prototype.includes;
 
   String.prototype.toNumber = function() {
-    return parseInt(this);
+    return parseFloat(this);
   };
 
   Number.prototype.isInteger = function() {
     return (parseFloat(this) | 0) === parseFloat(this);
   };
+
+  Array.prototype.defineGetter("empty", function() { return this.length === 0; });
 
   Array.prototype.deleteItem = function(item) {
     this.splice(this.indexOf(item), 1);
@@ -103,8 +115,10 @@ function init() {
     const newArr = this.map(function(v) {
       if(JSON.stringify(v) == JSON.stringify(rval))
         return rwith;
-      else if(typeof v == "string" && v.includes(rval))
-        return v.replace(new RegExp(v.match(new RegExp(rval, "g")).join("|"), "g"), rwith);
+      else if(typeof v == "string" && !(rval instanceof RegExp) && v.includes(rval))
+        return v.replaceAll(rval, rwith);
+      else if(typeof v == "string" && rval instanceof RegExp && v.search(rval) > -1)
+        return v.replace(rval, rwith);
       else return v;
     });
     Object.assign(this, newArr);
@@ -123,6 +137,14 @@ function init() {
 
   Array.prototype.someType = Array.prototype.anyType;
 
+  Array.prototype.allInstancesOf = function(clazz) {
+    return this.every(v => v instanceof clazz);
+  };
+
+  Array.prototype.anyInstancesOf = function(clazz) {
+    return this.some(v => v instanceof clazz);
+  };
+
   Array.prototype.all = Array.prototype.every;
   Array.prototype.any = Array.prototype.some;
   Array.prototype.contains = Array.prototype.includes;
@@ -136,10 +158,6 @@ function init() {
     return this[this.length - 1];
   };
 
-  Array.prototype.item = function(index) {
-    return this[index + 1];
-  };
-
   Array.prototype.randomItem = function() {
    if(this.length > 0) 
       return this[randomNumber(0, this.length - 1)];
@@ -151,17 +169,17 @@ function init() {
   };
 
   Array.prototype.min = function() {
-    if(this.every(v => typeof v == "number")) 
+    if(this.allType("number")) 
       return Math.min(...this);
   };
 
   Array.prototype.max = function() {
-    if(this.every(v => typeof v == "number")) 
+    if(this.allType("number")) 
       return Math.max(...this);
   };
 
   Array.prototype.sum = function() {
-    if(this.every(v => typeof v == "number")) 
+    if(this.allType("number")) 
       return this.reduce((acc, cur) => acc + cur, 0);
   };
 
@@ -171,8 +189,18 @@ function init() {
     return this.filter(v => !!v || v === 0);
   };
 
-  Array.prototype.reject = function(cn) {
-    return this.filter(v => !cn(v));
+  Array.prototype.reject = function(predicate) {
+    return this.filter(v => !predicate(v));
+  };
+
+  Array.prototype.pop = function(index) {
+    if(!this.empty) {
+      if(typeof index !== 'undefined') {
+        return this.splice(index, 1)[0];
+      } else if(index >= 0) {
+        return this.splice(this.length - 1, 1)[0];
+      }
+    }
   };
 
   Array.prototype.collapse = function(sep) {
@@ -181,7 +209,7 @@ function init() {
     else if(this.all(v => JSON.stringify(v).search(/^\{.{0,}\}$/) !== -1) && this.allType('object')) 
       return this.reduce((acc, cur) => { return {...acc, ...cur}; });
     else if(this.all(v => Array.isArray(v))) 
-      return this.reduce((acc, cur) => { return acc.concat(cur); });
+      return this.flat(1);
     else return this.join(typeof sep !== 'undefined' ? sep : '');
   };
 
@@ -215,7 +243,7 @@ function init() {
   Object.prototype.size = Object.prototype.length;
 
   Object.prototype.includes = function(key) {
-    return key in this;
+    return Object.keys(this).some(k => k === key);
   };
 
   Object.prototype.keyOf = function(val) {
@@ -228,7 +256,7 @@ function init() {
 
   Object.prototype.setKey = function(key, value) {
     this[key] = value;
-    return value;
+    return this;
   };
 
   Object.prototype.deleteKey = function(key) {
@@ -268,7 +296,7 @@ function init() {
   };
 
   Element.prototype.attr = function(name, value) {
-    if(value) this.setAttribute(name, value);
+    if(!!value) this.setAttribute(name, value);
     return this.getAttribute(name);
   };
 
@@ -340,14 +368,15 @@ function init() {
   };
 
   Element.prototype.hover = function(onin, onout) {
-    if(onin && onout) {
+    if(!!onin && !!onout) {
       this.onmouseenter = function(e) { onin.call(this, e); };
       this.onmouseleave = function(e) { onout.call(this, e); };
-    } else if(onin && !onout) {
+    } else if(!!onin && !onout) {
       this.onmouseenter = function(e) { onin.call(this, e); };
       this.onmouseleave = function(e) { onin.call(this, e); };
     }
   };
+
 
   Element.prototype.keydown = function(key, callback) {
     this.onkeydown = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
@@ -364,7 +393,7 @@ function init() {
   HTMLElement.prototype.triggerFocus = HTMLElement.prototype.focus;
 
   HTMLElement.prototype.focus = function(callback) {
-    if(callback) 
+    if(!!callback) 
       this.onfocus = function(e) { callback.call(this, e); };
     else 
       this.triggerFocus();
@@ -411,15 +440,21 @@ function init() {
       this.dispatchEvent(new Event("submit"));
   };
 
-  Element.prototype.on = function(ev, callback) {
-    this['on' + ev] = callback;
+  Element.prototype.eventListeners = [];
+
+  Element.prototype.on = function(event, id, callback, options={}) {
+    this.eventListeners.push({event, id, callback, options});
+    this.addEventListener(event, callback, options);
   };
 
-  Element.prototype.off = function(ev) {
-    this['on' + ev] = undefined;
+  Element.prototype.off = function(event, id) {
+    const predicate = v =>  v.event === event && v.id === id;
+    const eventListener = this.eventListeners.find(predicate);
+    this.eventListeners.splice(this.eventListeners.findIndex(predicate), 1);
+    this.removeEventListener(eventListener.event, eventListener.callback, eventListener.options);
   };
 
-  Element.prototype.prepend = function(val) {
+  Element.prototype.before = function(val) {
     if(typeof val == "string") {
       this.insertAdjacentHTML("beforebegin", val);
     } else {
@@ -427,7 +462,7 @@ function init() {
     }
   };
 
-  Element.prototype.append = function(val) {
+  Element.prototype.after = function(val) {
     if(typeof val == "string") {
       this.insertAdjacentHTML("afterend", val);
     } else {
@@ -435,7 +470,7 @@ function init() {
     }
   };
 
-  Element.prototype.before = function(val) { 
+  Element.prototype.prepend = function(val) { 
     if(typeof val == "string") {
       this.insertAdjacentHTML("afterbegin", val);
     } else {
@@ -443,7 +478,7 @@ function init() {
     }
   };
 
-  Element.prototype.after = function(val) {
+  Element.prototype.append = function(val) {
     if(typeof val == "string") {
       this.insertAdjacentHTML("beforeend", val);
     } else {
@@ -514,7 +549,7 @@ function toArray(val) {
       try {
         return Array.from(val);
       } catch {
-        console.log("cannot coerce value to array");
+        return false;
       }
     }
   }
