@@ -13,12 +13,12 @@ function init() {
 
   String.prototype.splice = function(start, delCount, newSubStr) {
     Object.assign(this, this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount)));
-    return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
+    return this;
   };
 
   String.prototype.insert = function(index, value) {
     Object.assign(this, this.slice(0, index) + value + this.slice(index));
-    return this.slice(0, index) + value + this.slice(index);
+    return this;
   }
 
   String.prototype.contains = String.prototype.includes;
