@@ -31,8 +31,6 @@ function init() {
     return (parseFloat(this) | 0) === parseFloat(this);
   };
 
-  Array.prototype.defineGetter("empty", function() { return this.length === 0; });
-
   Array.prototype.deleteItem = function(item) {
     this.splice(this.indexOf(item), 1);
   };
@@ -194,7 +192,7 @@ function init() {
   };
 
   Array.prototype.pop = function(index) {
-    if(!this.empty) {
+    if(this.length !== 0) {
       if(typeof index !== 'undefined') {
         return this.splice(index, 1)[0];
       } else if(index >= 0) {
