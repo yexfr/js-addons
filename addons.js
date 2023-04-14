@@ -211,9 +211,13 @@ function init() {
     else return this.join(typeof sep !== 'undefined' ? sep : '');
   };
 
-  Object.prototype.forEach = function(callback) {
-    for (const key of Object.keys(this)) {
-      callback(key, this[key]);
+  Array.prototype.pluck = function(key) {
+    return this.map(v => v[key]);
+  };
+
+  Object.forEach = function(obj, callback) {
+    for (const key of Object.keys(obj)) {
+      callback(key, obj[key]);
     }
   };
 
@@ -229,64 +233,19 @@ function init() {
     });
   };
 
-  Object.prototype.freeze = function() {
-    return Object.freeze(this);
-  };
-
-  Object.prototype.seal = function() {
-    return Object.seal(this);
-  };
-
   Object.prototype.defineGetter('length', function() { return Object.entries(this).length; });
   Object.prototype.size = Object.prototype.length;
 
-  Object.prototype.includes = function(key) {
-    return Object.keys(this).some(k => k === key);
+  Object.includes = function(obj, key) {
+    return Object.keys(obj).some(k => k === key);
   };
 
-  Object.prototype.keyOf = function(val) {
-    return Object.keys(this)[Object.values(this).findIndex(v => v === val)];
+  Object.keyOf = function(obj, val) {
+    return Object.keys(obj)[Object.values(obj).findIndex(v => v === val)];
   };
 
-  Object.prototype.getKey = function(key) {
-    return this[key];
-  };
-
-  Object.prototype.setKey = function(key, value) {
-    this[key] = value;
-    return this;
-  };
-
-  Object.prototype.deleteKey = function(key) {
-    delete this[key];
-    return this;
-  };
-
-  Object.prototype.new = function() {
-    const newObj = {};
-    Object.getOwnPropertyDescriptors(this).forEach((k, v) => { 
-      if(typeof v.value !== "undefined") 
-        newObj.setKey(k, v.value);
-      if(typeof v.get !== "undefined")
-        newObj.defineGetter(k, v.get);
-      if(typeof v.set !== "undefined") 
-        newObj.defineSetter(k, v.set);
-    });
-    return newObj;
-  };
-
-  Object.prototype.template = Object.prototype.new;
-  Object.prototype.instance = Object.prototype.new; 
-
-  Object.prototype.toArray = function() {
-    return Object.entries(this).map(([key, value]) => JSON.parse(`{"${key}":"${value}"}`));
-  };
-
-  Object.prototype.defineGetter('keys', function() { return Object.keys(this); });
-  Object.prototype.defineGetter('values', function() { return Object.values(this); });
-
-  Object.prototype.concat = function(obj) { 
-    return {...this, ...obj}; 
+  Object.toArray = function(obj) {
+    return Object.entries(obj).map(([key, value]) => JSON.parse(`{"${key}":"${value}"}`));
   };
 
   JSON.get = function(url, callback) {
@@ -298,16 +257,21 @@ function init() {
     return this.getAttribute(name);
   };
 
-  Object.defineProperty(Element.prototype, 'selector', {
-    get: function() { return (this.parentElement ? this.parentElement.selector + " > " : '') + this.tagName.toLowerCase() + this.getAttributeNames().filter(v => v !== "class" && v !== "id" && v !== "style").map(v => `[${v}='${this.attr(v)}']`).join('') + (this.id ? "#" + this.id : '') + (this.className ? "." + [...this.classList].join(".") : ''); }
-  });
+  Element.prototype.defineGetter("selector",
+    function() { 
+      return (this.parentElement ? this.parentElement.selector + " > " : '') + 
+             this.tagName.toLowerCase() + 
+             this.getAttributeNames().filter(v => v !== "class" && v !== "id" && v !== "style").map(v => `[${v}='${this.attr(v)}']`).join('') + 
+             (this.id ? "#" + this.id : '') + 
+             (this.className ? "." + [...this.classList].join(".") : ''); }
+  );
 
   Element.prototype.setRule = function(val) {
     setRule(this.selector, val);
   };
 
   Element.prototype.getRule = function(val) {
-    return window.getComputedStyle(this).getPropertyValue(val);
+    return window.getComputedStyle(this, null).getPropertyValue(val);
   };
 
   Element.prototype.setCss = Element.prototype.setRule;
@@ -356,6 +320,23 @@ function init() {
 
   Element.prototype.content = Element.prototype.cont;
 
+  Element.prototype.eventListeners = [];
+
+  Element.prototype.on = function(event, id, callback, options={}) {
+    if(id.startsWith("proto-")) return;
+    this.eventListeners.push({event, id, callback, options});
+    this.addEventListener(event, callback, options);
+  };
+
+  Element.prototype.off = function(event, id) {
+    const eventListener = this.eventListeners.find(predicate);
+    if(typeof eventListener !== "undefined") {
+      const predicate = v => v.event === event && v.id === id;
+      this.eventListeners.splice(this.eventListeners.findIndex(predicate), 1);
+      this.removeEventListener(eventListener.event, eventListener.callback, eventListener.options);
+    }
+  };
+
   HTMLElement.prototype.triggerClick = HTMLElement.prototype.click;
 
   HTMLElement.prototype.click = function(callback) { 
@@ -367,32 +348,31 @@ function init() {
 
   Element.prototype.hover = function(onin, onout) {
     if(!!onin && !!onout) {
-      this.onmouseenter = function(e) { onin.call(this, e); };
-      this.onmouseleave = function(e) { onout.call(this, e); };
+      this.on("mouseenter", "proto-hover-onin", onin);
+      this.on("mouseleave", "proto-hover-onout", onout);
     } else if(!!onin && !onout) {
-      this.onmouseenter = function(e) { onin.call(this, e); };
-      this.onmouseleave = function(e) { onin.call(this, e); };
+      this.on("mouseenter", "proto-hover-onin", onin);
+      this.on("mouseleave", "proto-hover-onout", onin);
     }
   };
 
-
-  Element.prototype.keydown = function(key, callback) {
-    this.onkeydown = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
+  Element.prototype.keydown = function(callback) {
+    this.on("keydown", "proto-keydown", callback);
   };
 
-  Element.prototype.keypress = function(key, callback) {
-    this.onkeypress = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
+  Element.prototype.keypress = function(callback) {
+    this.on("keypress", "proto-keypress", callback);
   };
 
-  Element.prototype.keyup = function(key, callback) {
-    this.onkeyup = function(e) { if(e.key == key || e.code == key || e.which == key && !!callback) callback.call(this, e); if(!callback) key.call(this, e); };
+  Element.prototype.keyup = function(callback) {
+    this.on("keyup", "proto-keyup", callback);
   };
 
   HTMLElement.prototype.triggerFocus = HTMLElement.prototype.focus;
 
   HTMLElement.prototype.focus = function(callback) {
     if(!!callback) 
-      this.onfocus = function(e) { callback.call(this, e); };
+      this.on("focus", "proto-focus", callback);
     else 
       this.triggerFocus();
   };
@@ -407,49 +387,35 @@ function init() {
     return this.value;
   };
 
-  Element.prototype.unfocus = function(callback) {
-    this.onblur = function(e) { callback.call(this, e); };
+  Element.prototype.blur = function(callback) {
+    this.on("blur", "proto-blur", callback);
   };
 
   Element.prototype.load = function(callback) {
-    this.onload = function(e) { callback.call(this, e); };
+    this.on("load", "proto-load", callback);
   };
 
   Element.prototype.unload = function(callback) {
-    this.onunload = function(e) { callback.call(this, e); };
+    this.on("unload", "proto-unload", callback);
   };
 
   Element.prototype.select = function(callback) {
-    this.onselect = function(e) { callback.call(this, e); };
+    this.on("select", "proto-select", callback);
   };
 
   Element.prototype.input = function(callback) {
-    this.oninput = function(e) { callback.call(this, e); };
+    this.on("input", "proto-input", callback);
   };
 
   Element.prototype.scroll = function(callback) {
-    this.onscroll = function(e) { callback.call(this, e); };
+    this.on("scroll", "proto-scroll", callback);
   };
 
   HTMLFormElement.prototype.submit = function(callback) {
     if(callback) 
-      this.onsubmit = function(e) { callback.call(this, e); };
+      this.on("submit", "proto-submit", callback);
     else 
       this.dispatchEvent(new Event("submit"));
-  };
-
-  Element.prototype.eventListeners = [];
-
-  Element.prototype.on = function(event, id, callback, options={}) {
-    this.eventListeners.push({event, id, callback, options});
-    this.addEventListener(event, callback, options);
-  };
-
-  Element.prototype.off = function(event, id) {
-    const predicate = v =>  v.event === event && v.id === id;
-    const eventListener = this.eventListeners.find(predicate);
-    this.eventListeners.splice(this.eventListeners.findIndex(predicate), 1);
-    this.removeEventListener(eventListener.event, eventListener.callback, eventListener.options);
   };
 
   Element.prototype.before = function(val) {
@@ -520,7 +486,6 @@ function init() {
   Function.prototype.fire = function(times, ...args) {
     while(times--) { this(...args); }
   };
-
 }
 
 init();
@@ -529,29 +494,12 @@ function randomNumber(min, max) {
   return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min); 
 }
 
-function cssToObj(cssText) { 
+function cssStrToObj(cssText) { 
   var regex = /([\w-]*)\s*:\s*([^;]*)/g;
   var match, properties={};
   while(match=regex.exec(cssText)) 
     properties[match[1]] = match[2].trim(); 
   return properties; 
-}
-
-function toArray(val) {
-  if(JSON.stringify(val).search(/^\{.{0,}\}$/) !== -1) {
-    return Object.prototype.toArray.apply(val);
-  } else if(typeof val[Symbol.iterator] === 'function') {
-    try {
-      return [...val];
-    } catch {
-      try {
-        return Array.from(val);
-      } catch {
-        return false;
-      }
-    }
-  }
-  return false;
 }
 
 function elem(...query) {
@@ -563,9 +511,9 @@ function print(...messages) {
   console.log(...messages);
 }
 
-function copyToClipboard(text) {
-  if(!document.hasFocus()) document.body.focus();
-  navigator.clipboard.writeText(text);
+async function copyToClipboard(text) {
+  if((await navigator.permissions.query({ name: "clipboard-write" })).state === "granted" && document.hasFocus())
+    navigator.clipboard.writeText(text);
 }
 
 const colorModify = (c0,p,c1,l) => {
@@ -593,17 +541,21 @@ const colorModify = (c0,p,c1,l) => {
   else return"#"+(4294967296+r*16777216+g*65536+b*256+(f?m(a*255):0)).toString(16).slice(1,f?undefined:-2)
 };
 
+function arrCompare(arr1, arr2) {
+  return arr1.length === arr2.length && arr1.every((v, i) => v === arr2[i]);
+};
+
 function setRule(selector, rules) {
   if(document.styleSheets.length > 0) {
     for(const ss of document.styleSheets) {
       const r = ss.cssRules ? [...ss.cssRules] : [...ss.rules];
-      if(r.some(v => v.selectorText === selector)) {
+      if(r.some(v => arrCompare([...document.querySelectorAll(v.selectorText)], [...document.querySelectorAll(selector)]))) {
         for(const rule of r) {
           if(rule.selectorText === selector) {
             if(typeof rules !== "string") 
-              rules.forEach((k, v) => { rule.style[k] = v; });
+              Object.forEach(rules, (k, v) => { rule.style[k] = v; });
             else 
-              cssToObj(rules).forEach((k, v) => { rule.style[k] = v; });
+              Object.forEach(cssStrToObj(rules), (k, v) => { rule.style[k] = v; });
           }
         }
       } else if(ss === document.styleSheets[document.styleSheets.length - 1]) {
