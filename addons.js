@@ -323,7 +323,6 @@ function init() {
   Element.prototype.eventListeners = [];
 
   Element.prototype.on = function(event, id, callback, options={}) {
-    if(id.startsWith("proto-")) return;
     this.eventListeners.push({event, id, callback, options});
     this.addEventListener(event, callback, options);
   };
