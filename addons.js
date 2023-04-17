@@ -340,7 +340,7 @@ function init() {
 
   HTMLElement.prototype.click = function(callback) { 
     if(callback)
-      this.onclick = function(e) { callback.call(this, e); };
+      this.on("click", "proto-click", callback);
     else 
       this.triggerClick();
   };
@@ -459,14 +459,14 @@ function init() {
 
   Element.prototype.removeClass = function(...classNames) {
     this.classList.remove(...classNames);
-    if(this.classList.length == 0) this.removeAttribute('class');
+    if(this.classList.length === 0) this.removeAttribute('class');
   };
 
   Element.prototype.toggleClass = function(...classNames) {
     [...classNames].forEach(v => {
       if(this.classList.contains(v)) {
         this.classList.remove(v); 
-        if(this.classList.length == 0) this.removeAttribute('class');
+        if(this.classList.length === 0) this.removeAttribute('class');
       } else 
         this.classList.add(v);
     });
@@ -482,8 +482,8 @@ function init() {
     return [...this];
   };
 
-  Function.prototype.fire = function(times, ...args) {
-    while(times--) { this(...args); }
+  Function.prototype.fire = function(times, thisArg, ...args) {
+    while(times--) { this.call(thisArg, ...args); }
   };
 }
 
@@ -503,7 +503,7 @@ function cssStrToObj(cssText) {
 
 function elem(...query) {
   const elemArray = [...document.querySelectorAll([...query].join(", "))];
-  return elemArray.length != 1 ? elemArray : document.querySelector(query);
+  return elemArray.length !== 1 ? elemArray : document.querySelector(query);
 }
 
 function print(...messages) {
@@ -550,7 +550,7 @@ function setRule(selector, rules) {
       const r = ss.cssRules ? [...ss.cssRules] : [...ss.rules];
       if(r.some(v => arrCompare([...document.querySelectorAll(v.selectorText)], [...document.querySelectorAll(selector)]))) {
         for(const rule of r) {
-          if(rule.selectorText === selector) {
+          if(arrCompare([...document.querySelectorAll(rule.selectorText)], [...document.querySelectorAll(selector)])) {
             if(typeof rules !== "string") 
               Object.forEach(rules, (k, v) => { rule.style[k] = v; });
             else 
