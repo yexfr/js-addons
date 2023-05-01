@@ -513,7 +513,7 @@ function createElem(tagName, { textContent, innerHTML, value, children, ...attrs
   if(!!value)
     el.value = value;
   if(!!children)
-    el.replaceChildren(...children);
+    el.append(...children);
   for(const [name, value] of Object.entries(attrs))
     el.setAttribute(name, value);
   return el;
