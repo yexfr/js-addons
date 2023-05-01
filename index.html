@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="//unpkg.com/@highlightjs/cdn-assets@11.5.1/styles/srcery.min.css">
     <script src="//unpkg.com/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
     <style>
-      pre,body {
+      pre, body {
         margin: 0;
       }
 
@@ -16,26 +16,18 @@
     </style>
   </head>
   <body>
-    <pre><code class="language-javascript" data-src="./addons.js"></code></pre>
-    <script src="./addons.js"></script>
+    <pre><code class="language-javascript" data-src="https://cdn.jsdelivr.net/gh/yexex/js-addons/addons.js"></code></pre>
     <script>
-    if(elem("code[data-src]")) {
-      if(Array.isArray(elem("code[data-src]"))) {
-        elem("code[data-src]").forEach(el => { 
+      document.querySelectorAll("code[class^='language-'][data-src]").forEach(el => { 
           (async () => {
+
             const jsFetch = await fetch(el.getAttribute("data-src")); 
-            el.setHtml(await jsFetch.text());
+            el.textContent = await jsFetch.text();
             hljs.highlightElement(el);
+            el.setAttribute("data-src-loaded", "")
+
           })();
-        }); 
-      } else {
-        (async () => {
-          const jsFetch = await fetch(elem("code[data-src]").getAttribute("data-src")); 
-          elem("code[data-src]").setHtml(await jsFetch.text());
-          hljs.highlightElement(elem("code[data-src]"));         
-        })();
-      }
-    }
+      }); 
    </script>
 </body>
 </html>
