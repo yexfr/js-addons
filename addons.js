@@ -261,9 +261,15 @@ function init() {
              this.tagName.toLowerCase() + 
              this.getAttributeNames().filter(v => v !== "class" && v !== "id" && v !== "style").map(v => `[${v}='${this.attr(v)}']`).join('') + 
              (this.id ? "#" + this.id : '') + 
-             (this.className ? "." + [...this.classList].join(".") : ''); }
+             (this.className ? "." + [...this.classList].join(".") : ''); 
+    }
   );
 
+  Element.prototype.appendTo = function(sel) {
+    document.querySelector(sel).appendChild(this);
+    return this;
+  }
+ 
   Element.prototype.setRule = function(val) {
     setRule(this.selector, val);
   };
@@ -326,9 +332,9 @@ function init() {
   };
 
   Element.prototype.off = function(event, id) {
+    const predicate = v => v.event === event && v.id === id;
     const eventListener = this.eventListeners.find(predicate);
     if(typeof eventListener !== "undefined") {
-      const predicate = v => v.event === event && v.id === id;
       this.eventListeners.splice(this.eventListeners.findIndex(predicate), 1);
       this.removeEventListener(eventListener.event, eventListener.callback, eventListener.options);
     }
@@ -474,7 +480,7 @@ function init() {
     return [...classNames].every(v => this.classList.contains(v));
   };
 
-  Element.prototype.defineGetter('hasContent', function() { return this.html() !== ''; });
+  Element.prototype.defineGetter('hasContent', function() { return this.html().trim() !== ''; });
 
   NodeList.prototype.toArray = function() {
     return [...this];
