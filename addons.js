@@ -12,13 +12,11 @@ function init() {
   };
 
   String.prototype.splice = function(start, delCount, newSubStr) {
-    Object.assign(this, this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount)));
-    return this;
+    return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
   };
 
   String.prototype.insert = function(index, value) {
-    Object.assign(this, this.slice(0, index) + value + this.slice(index));
-    return this;
+    return this.slice(0, index) + value + this.slice(index);
   }
 
   String.prototype.contains = String.prototype.includes;
@@ -280,7 +278,7 @@ function init() {
   Element.prototype.getCSS = Element.prototype.getRule;
 
   Element.prototype.css = function(val) {
-    if(typeof val !== "string" || JSON.stringify(cssToObj(val)) !== "{}") 
+    if(typeof val !== "string" || JSON.stringify(cssStrToObj(val)) !== "{}") 
       this.setRule(val);
     else
       return this.getRule(val);
@@ -504,6 +502,21 @@ function cssStrToObj(cssText) {
 function elem(...query) {
   const elemArray = [...document.querySelectorAll([...query].join(", "))];
   return elemArray.length !== 1 ? elemArray : document.querySelector(query);
+}
+
+function createElem(tagName, { textContent, innerHTML, value, children, ...attrs }, opts={}) {
+  const el = document.createElement(tagName.toLowerCase(), opts);
+  if(!!textContent)
+    el.textContent = textContent;
+  if(!!innerHTML)
+    el.innerHTML = innerHTML;
+  if(!!value)
+    el.value = value;
+  if(!!children)
+    el.replaceChildren(...children);
+  for(const [name, value] of Object.entries(attrs))
+    el.setAttribute(name, value);
+  return el;
 }
 
 function print(...messages) {
