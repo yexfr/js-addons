@@ -201,6 +201,13 @@ function init() {
     return this.filter(v => this.one(v));
   }
 
+  Array.prototype.fillEach = function(value, start, end) {
+    for(let i = start; i <= end; i++) {
+      this[i] = structuredClone(value);
+    }
+    return this;
+  }
+
   Array.zip = function(...arrays) {
     return Array(arrays[0].length).fill().map((_, i) => arrays.map(v => v[i]));
   }
