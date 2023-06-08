@@ -2,7 +2,6 @@
 <html>
   <head>
     <title> JS Addons </title>
-    <link rel="icon" href="./favicon.ico">
     <link rel="stylesheet" href="//unpkg.com/@highlightjs/cdn-assets@11.5.1/styles/srcery.min.css">
     <script src="//unpkg.com/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
     <style>
@@ -11,23 +10,19 @@
       }
 
       code[data-src] {
-        padding:0;
+        padding: 0;
       }
     </style>
   </head>
   <body>
     <pre><code class="language-javascript" data-src="https://cdn.jsdelivr.net/gh/yexex/js-addons/addons.js"></code></pre>
     <script>
-      document.querySelectorAll("code[class^='language-'][data-src]").forEach(el => { 
-          (async () => {
-
-            const jsFetch = await fetch(el.getAttribute("data-src")); 
-            el.textContent = await jsFetch.text();
-            hljs.highlightElement(el);
-            el.setAttribute("data-src-loaded", "")
-
-          })();
+      document.querySelectorAll("code[class^='language-'][data-src]").forEach(async el => { 
+        const jsFetch = await fetch(el.getAttribute("data-src")); 
+        el.textContent = await jsFetch.text();
+        hljs.highlightElement(el);
+        el.setAttribute("data-src-loaded", "");
       }); 
-   </script>
+    </script>
 </body>
 </html>
