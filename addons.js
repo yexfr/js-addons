@@ -30,6 +30,12 @@ function init() {
     return objects.reduce((acc, cur) => { return { ...acc, ...cur }; });
   }
 
+  Object.make = function(keysOrEntries, values) {
+    if(keysOrEntries.allType("array"))
+      return Object.fromEntries(keysOrEntries);
+    return Object.fromEntries(keysOrEntries.map((v, i) => [v, values[i]]));
+  }
+
   String.prototype.replaceArray = function(find, replace) {
     let replaceString = this;
     for (var i = 0; i < find.length; i++) {
@@ -192,22 +198,34 @@ function init() {
     [this[i], this[j]] = [this[j], this[i]];
   }
 
+  if(!Array.prototype.toSorted)
+    Array.prototype.toSorted = function(compareFn) {
+      return this.slice().sort(compareFn);
+    }
+
   Array.prototype.shuffle = function() {
-    for(let i = this.length; i > 0; --i)
-      this.swapIndices(i, Math.floor(Math.random() * (i + 1)));
+    const shuffled = this.slice();
+    for(let i = this.length - 1; i > 0; --i)
+      shuffled.swapIndices(i, Math.floor(Math.random() * (i + 1)));
+    return shuffled;
+  }
+
+  Array.prototype.sample = function(size) {
+    return this.shuffle().slice(0, size);
+  }
+
+  Array.prototype.partition = function(predicate) {
+    return [this.filter(predicate), this.reject(predicate)];
+  }
+
+  Array.prototype.invoke = function(methodName, ...args) {
+    return this.map(v => v[methodName].call(v, ...args));
   }
 
   Array.prototype.uniques = function() {
     return this.filter(v => this.one(v));
   }
-
-  Array.prototype.fillEach = function(value, start, end) {
-    for(let i = start; i <= end; i++) {
-      this[i] = structuredClone(value);
-    }
-    return this;
-  }
-
+  
   Array.zip = function(...arrays) {
     return Array(arrays[0].length).fill().map((_, i) => arrays.map(v => v[i]));
   }
@@ -216,8 +234,9 @@ function init() {
     return Array(arrays[0].length).fill().map((_, i) => Object.fromEntries(arrays.map((p, j) => [keys[j], p[i]])));
   }
 
-  JSON.get = function(url, callback) {
-    fetch(new Request(url)).then(j => j.json()).then(s => callback(s));
+  JSON.get = async function(url) {
+    const res = await fetch(new Request(url));
+    return await res.json();
   }
 
   Element.prototype.attr = function(name, value) {
@@ -492,6 +511,12 @@ async function copyToClipboard(text) {
     document.execCommand?.("copy");
     el.remove();
   }));
+}
+
+function range(startOrAmount, end, step=1) {
+  if(arguments.length === 1) {
+    return Array(startOrAmount).fill().map((_, i) => i);
+  } else return Array(end - startOrAmount).fill().map((_, i) => startOrAmount + (i * step)).filter(v => v < end);
 }
 
 const colorModify = (c0,c1,p,l) => {
