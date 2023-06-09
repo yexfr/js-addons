@@ -30,7 +30,8 @@ function init() {
     return objects.reduce((acc, cur) => { return { ...acc, ...cur }; });
   }
 
-  Object.make = function(keysOrEntries, values) {
+  Object.make = function(keysOrEntries=[], values=[]) {
+    values.length = keysOrEntries.length;
     if(keysOrEntries.allType("array"))
       return Object.fromEntries(keysOrEntries);
     return Object.fromEntries(keysOrEntries.map((v, i) => [v, values[i]]));
@@ -38,9 +39,8 @@ function init() {
 
   String.prototype.replaceArray = function(find, replace) {
     let replaceString = this;
-    for (var i = 0; i < find.length; i++) {
+    for (let i = 0; i < find.length; i++)
       replaceString = replaceString.replace(new RegExp(find[i], "g"), replace[i]);
-    }
     return replaceString;
   }
 
@@ -113,16 +113,15 @@ function init() {
   Array.prototype.reorder = function(key=v => v) {
     const defaultCompare = k => ( x, y ) => {
       x = k(x), y = k(y);
-      if( x < y )
-        return -1;
-      else if( x > y ) return 1;
+      if( x < y ) return -1;
+      if( x > y ) return 1;
       return 0;
     };
     return this.map(key).allType("string") ? this.toSorted(defaultCompare(key)) : ( this.map(key).allType("number") ? this.toSorted((a, b) => key(a) - key(b)) : this );
   }
 
   Array.prototype.first = function() {
-    return this.at(0);
+    return this[0];
   }
 
   Array.prototype.last = function() {
@@ -175,7 +174,7 @@ function init() {
   Array.prototype.collapse = function(sep='') {
     if(this.allType("number") || this.allType("bigint"))
       return this.sum();
-    else if(this.all(v => Array.isArray(v))) 
+    else if(this.allType("array")) 
       return this.flat(1);
     else if(this.allType('object')) 
       return Object.chain(...this);
@@ -190,8 +189,21 @@ function init() {
     return this.filter(typeof predicate !== "function" ? (v => v === predicate) : predicate).length === 1;
   }
 
+  Array.prototype.contains = function(value) {
+    if(typeOf(value) === "array")
+      return this.some(v => arrCompare(v, value));
+    else if(typeOf(value) === "object")
+      return this.some(v => arrCompare(Object.entries(v), Object.entries(value)));
+    else
+      return this.includes(value);
+  }
+
   Array.prototype.without = function(...items) {
-    return this.reject(v => items.includes(v));
+    return this.reject(v => items.contains(v));
+  }
+
+  Array.prototype.difference = function(items) {
+    return this.filter(v => items.contains(v));
   }
 
   Array.prototype.swapIndices = function(i, j) {
@@ -199,8 +211,18 @@ function init() {
   }
 
   if(!Array.prototype.toSorted)
-    Array.prototype.toSorted = function(compareFn) {
-      return this.slice().sort(compareFn);
+    Array.prototype.toSorted = function() {
+      return this.slice().sort(...arguments);
+    }
+  
+  if(!Array.prototype.toReversed)
+    Array.prototype.toReversed = function() {
+      return this.slice().reverse();
+    }
+  
+  if(!Array.prototype.toSpliced) 
+    Array.prototype.toSpliced = function() {
+      this.slice().splice(...arguments);
     }
 
   Array.prototype.shuffle = function() {
@@ -223,7 +245,23 @@ function init() {
   }
 
   Array.prototype.uniques = function() {
-    return this.filter(v => this.one(v));
+    return [...new Set(this)];
+  }
+
+  Array.prototype.where = function(obj) {
+    return this.map(Object.entries).filter(v => Object.entries(obj).every(p => v.contains(p))).map(Object.fromEntries);
+  }
+  
+  Array.prototype.indexBy = function(key) {
+    return Object.fromEntries(this.reorder(v => v[key]).map(v => [v[key], v]))
+  }
+  
+  Array.prototype.count = function(value) {
+    return this.filter(v => v === value).length;
+  }
+
+  Array.prototype.countBy = function(predicate) {
+    return Object.fromEntries(this.map(predicate).uniques().map(v => [v, this.map(predicate).count(v)]));
   }
   
   Array.zip = function(...arrays) {
@@ -245,7 +283,7 @@ function init() {
   }
 
   Element.prototype.appendTo = function(sel) {
-    return document.querySelector(sel).appendChild(this);
+    return (document.querySelector(sel) || sel).appendChild?.(this);
   }
  
   Element.prototype.setRule = function(val) {
@@ -254,8 +292,8 @@ function init() {
     else Object.forEach(cssStrToObj(val), (k, v) => this.style[k] = v);
   }
 
-  Element.prototype.getRule = function(val) {
-    return window.getComputedStyle(this, null).getPropertyValue(val);
+  Element.prototype.getRule = function(val, pseudoElm) {
+    return window.getComputedStyle(this, pseudoElm).getPropertyValue(val);
   }
 
   Element.prototype.setCss = Element.prototype.setRule;
@@ -305,45 +343,46 @@ function init() {
 
   Element.prototype.eventListeners = [];
 
-  Element.prototype.on = function(event, callback, options={}) {
+  Element.prototype.on = function(event, callback, options) {
     this.addEventListener(event, callback, options);
+    return callback;
   }
 
   Element.prototype.off = function(event, callback, options) {
     this.removeEventListener(event, callback, options);
+    return callback;
   }
 
   HTMLElement.prototype.triggerClick = HTMLElement.prototype.click;
 
   HTMLElement.prototype.click = function(callback) { 
     if(callback)
-      this.on("click", callback);
+      return this.on("click", callback);
     else this.triggerClick();
   }
 
   Element.prototype.hover = function(onin, onout) {
-    if(!!onin && !!onout) {
+    if(!!onin && !!onout)
+      return [ this.on("mouseenter", onin), this.on("mouseleave", onout) ];
+    else if(!!onin && !onout) {
       this.on("mouseenter", onin);
-      this.on("mouseleave", onout);
-    } else if(!!onin && !onout) {
-      this.on("mouseenter", onin);
-      this.on("mouseleave", onin);
+      return this.on("mouseleave", onin);
     }
   }
 
   Element.prototype.keydown = function(callback) {
-    this.on("keydown", callback);
+    return this.on("keydown", callback);
   }
 
   Element.prototype.keyup = function(callback) {
-    this.on("keyup", callback);
+    return this.on("keyup", callback);
   }
 
   HTMLElement.prototype.triggerFocus = HTMLElement.prototype.focus;
 
   HTMLElement.prototype.focus = function(callback) {
     if(!!callback) 
-      this.on("focus", callback);
+      return this.on("focus", callback);
     else this.triggerFocus();
   }
 
@@ -361,38 +400,38 @@ function init() {
 
   HTMLElement.prototype.blur = function(callback) {
     if(!!callback) 
-      this.on("blur", callback);
+      return this.on("blur", callback);
     else this.triggerBlur();
   }
 
   Element.prototype.load = function(callback) {
-    this.on("load", callback);
+    return this.on("load", callback);
   }
 
   Element.prototype.unload = function(callback) {
-    this.on("unload", callback);
+    return this.on("unload", callback);
   }
 
   Element.prototype.selectionchange = function(callback) {
     this.on("input", e.inputType.startsWith("delete") ? this.dispatchEvent(new Event("selectionchange", { bubbles: false, cancelable: false })) : e);
     document.addEventListener("selectionchange", e => this === document.activeElement ? this.dispatchEvent(new Event("selectionchange", { bubbles: false, cancelable: false })) : e);
-    this.on("selectionchange", callback);
+    return this.on("selectionchange", callback);
   }
 
   Element.prototype.input = function(callback) {
-    this.on("input", callback);
+    return this.on("input", callback);
   }
 
   Element.prototype.scroll = function(callback) {
-    this.on("scroll", callback);
+    return this.on("scroll", callback);
   }
 
   HTMLFormElement.prototype.triggerSubmit = HTMLFormElement.prototype.submit;
 
   HTMLFormElement.prototype.submit = function(callback) {
     if(callback) 
-      this.on("submit", callback);
-    else this.triggerSubmit();
+      return this.on("submit", callback);
+    this.triggerSubmit();
   }
 
   Element.prototype.before = function(val) {
@@ -414,13 +453,13 @@ function init() {
   }
 
   Element.prototype.append = function(val) {
-    if(typeof val === "string")
+    if(typeOf(val) === "string")
       this.insertAdjacentHTML("beforeend", val);
     else this.insertAdjacentElement("beforeend", val);
   }
 
-  Element.prototype.trigger = function(event, opts={}) {
-    this.dispatchEvent(new Event(event, opts));
+  Element.prototype.trigger = function(eventName, options) {
+    return this.dispatchEvent(new Event(eventName.toLowerCase(), options));
   }
 
   Element.prototype.addClass = function(...classNames) {
@@ -472,32 +511,36 @@ function createElem(tagName, { textContent, innerHTML, value, children, ...attrs
 }
 
 function typeOf(value) {
-  if(value === null) 
-    return "null";
-  else if(Array.isArray(value)) 
-    return "array";
-  else if(value instanceof Set)
-    return "set";
-  else if(value instanceof WeakSet)
-    return "weakset";
-  else if(value instanceof Map) 
-    return "map";
-  else if(value instanceof WeakMap)
-    return "weakmap";
-  else if(value instanceof Date)
-    return "date";
-  else if(value instanceof Error)
-    return "error";
-  else if(value instanceof RegExp)
-    return "regexp";
-  else if(value instanceof Promise)
-    return "promise";
-  else return typeof value;
+  switch(value) {
+    case Array.isArray(value):
+      return "array";
+    case value instanceof Set:
+      return "set";
+    case value instanceof Map: 
+      return "map";
+    case value instanceof Date:
+      return "date";
+    case value instanceof Error:
+      return "error";
+    case value instanceof RegExp:
+      return "regexp";
+    case value instanceof Promise:
+      return "promise";
+    case value instanceof Node:
+      switch(value.nodeType) {
+        case Node.ELEMENT_NODE: return "element";
+        case Node.ATTRIBUTE_NODE: return "attribute";
+        case Node.TEXT_NODE: return "text";
+        case Node.COMMENT_NODE: return "comment";
+        case Node.DOCUMENT_NODE: return "document";
+        case Node.DOCUMENT_FRAGMENT_NODE: return "documentfragment";
+        default: return "node";
+      }
+    default: return typeof value;
+  }
 }
 
-function print(...messages) {
-  console.log(...messages);
-}
+const print = console.log.bind(console);
 
 async function copyToClipboard(text) {
   navigator.permissions.query({ name: "clipboard-write" }).then(perm => {
