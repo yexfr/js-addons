@@ -202,10 +202,6 @@ function init() {
     return this.reject(v => items.contains(v));
   }
 
-  Array.prototype.difference = function(items) {
-    return this.filter(v => items.contains(v));
-  }
-
   Array.prototype.swapIndices = function(i, j) {
     [this[i], this[j]] = [this[j], this[i]];
   }
@@ -511,7 +507,7 @@ function createElem(tagName, { textContent, innerHTML, value, children, ...attrs
 }
 
 function typeOf(value) {
-  switch(value) {
+  switch(true) {
     case Array.isArray(value):
       return "array";
     case value instanceof Set:
